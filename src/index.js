@@ -8,10 +8,11 @@ const TILE_HEIGHT = 36;
 
 const PRELOAD_IMAGES = [
     '/rooms/studio_a.png',
-    '/selected_tile.png',
+    '/tiles/selected.png',
     '/character_test.png',
     '/walls/wall_a_left.png',
-    '/walls/wall_a_right.png'
+    '/walls/wall_a_right.png',
+    '/tiles/purple_carpet.png'
 ];
 
 function getMousePosition(canvas, e) {
@@ -76,6 +77,67 @@ function cutPolygon(context, points) {
     context.globalCompositeOperation = 'source-over';
 }
 
+// apply background shading to an image
+function getShaded(image, backgroundImage, offsetX, offsetY, intensity = 0.75) {
+    const imageCanvas = document.createElement('canvas');
+    imageCanvas.width = image.width;
+    imageCanvas.height = image.height;
+
+    const imageContext = imageCanvas.getContext('2d');
+    imageContext.drawImage(image, 0, 0);
+
+    const imageData = imageContext.getImageData(
+        0,
+        0,
+        image.width,
+        image.height
+    ).data;
+
+    const shaded = document.createElement('canvas');
+
+    shaded.width = image.width;
+    shaded.height = image.height;
+
+    const shadedContext = shaded.getContext('2d');
+
+    shadedContext.drawImage(
+        backgroundImage,
+        offsetX,
+        offsetY,
+        image.width,
+        image.height,
+        0,
+        0,
+        image.width,
+        image.height
+    );
+
+    const shadedData = shadedContext.getImageData(
+        0,
+        0,
+        image.width,
+        image.height
+    );
+
+    for (let i = 0; i < image.width * image.height * 4; i += 4) {
+        if (imageData[i + 3] === 0) {
+            shadedData.data[i + 3] = 0;
+        }
+    }
+
+    shadedContext.putImageData(shadedData, 0, 0);
+
+    imageContext.globalCompositeOperation = 'overlay';
+    imageContext.globalAlpha = intensity;
+    imageContext.drawImage(shaded, 0, 0);
+
+    return {
+        context: imageContext,
+        canvas: imageCanvas
+    };
+
+}
+
 class Room {
     constructor(game, { name, wallType, tileType }) {
         this.game = game;
@@ -111,123 +173,14 @@ class Room {
             HEIGHT / 2 - this.backgroundImage.height / 2
         );
 
+        this.tileImage = this.game.images['/tiles/purple_carpet.png'];
+
         // the yellow tile-select image
-        this.tileSelectImage = this.game.images['/selected_tile.png'];
+        this.tileSelectImage = this.game.images['/tiles/selected.png'];
 
         // cartesian coordinates of where to draw tileSelectImage
         this.tileSelectX = -1;
         this.tileSelectY = -1;
-    }
-
-    drawTiles() {
-    }
-
-    drawWalls() {
-        for (const [wallIndex, wallSection] of Object.entries(this.walls)) {
-            const image =
-                wallSection.orientation === 'left'
-                    ? this.wallLeftImage
-                    : this.wallRightImage;
-
-            const deltaY = 18 * (wallSection.orientation === 'left' ? -1 : 1);
-
-            let drawX = wallSection.offsetX;
-            let drawY = wallSection.offsetY;
-
-            for (let i = 0; i < wallSection.width; i += 1) {
-                const wallCanvas = document.createElement('canvas');
-                const wallContext = wallCanvas.getContext('2d');
-
-                wallContext.drawImage(image, 0, 0);
-
-                const wallImageData = wallContext.getImageData(
-                    0,
-                    0,
-                    image.width,
-                    image.height
-                ).data;
-
-                const shaded = document.createElement('canvas');
-
-                shaded.width = image.width;
-                shaded.height = image.height;
-
-                const ctx = shaded.getContext('2d');
-
-                ctx.drawImage(
-                    this.backgroundImage,
-                    drawX,
-                    drawY,
-                    image.width,
-                    image.height,
-                    0,
-                    0,
-                    image.width,
-                    image.height
-                );
-
-                const imageData = ctx.getImageData(
-                    0,
-                    0,
-                    image.width,
-                    image.height
-                );
-
-                for (let i = 0; i < image.width * image.height * 4; i += 4) {
-                    if (
-                        //imageData.data[i] === 0 ||
-                        wallImageData[i + 3] === 0 /*||
-                        !(
-                            imageData.data[i] === imageData.data[i + 1] &&
-                            imageData.data[i] === imageData.data[i + 2] &&
-                            imageData.data[i + 1] === imageData.data[i + 2]
-                        )*/
-                    ) {
-                        imageData.data[i + 3] = 0;
-                    }
-                }
-
-                ctx.putImageData(imageData, 0, 0);
-
-                document.body.appendChild(shaded);
-
-                const isExit = +wallIndex === this.exit.wall[0] && i === this.exit.wall[1];
-
-                if (isExit) {
-                    cutPolygon(wallContext, this.exit.clip);
-                    document.body.appendChild(wallCanvas);
-                }
-
-                this.roomContext.drawImage(wallCanvas, drawX, drawY);
-
-                if (!isExit) {
-                    // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/globalCompositeOperation
-                    // darken, overlay, luminosity
-                    this.roomContext.globalCompositeOperation = 'overlay';
-                    this.roomContext.globalAlpha = 0.75;
-
-                    this.roomContext.drawImage(shaded, drawX, drawY);
-
-                    this.roomContext.globalCompositeOperation = 'source-over';
-                    this.roomContext.globalAlpha = 1;
-                }
-
-                drawY += deltaY;
-                drawX += TILE_HEIGHT;
-            }
-        }
-    }
-
-    drawRoom() {
-        this.roomContext.drawImage(this.backgroundImage, 0, 0);
-        this.drawWalls();
-    }
-
-    init() {
-        const character = new Character(this.game, this, {});
-        this.characters.push(character);
-
-        this.drawRoom();
     }
 
     // convert cartesian coordinates to isometric grid position
@@ -259,6 +212,85 @@ class Room {
             this.backgroundOffsetY;
 
         return { x, y };
+    }
+
+    drawTiles() {
+        for (let isoY = 0; isoY < this.height; isoY += 1) {
+            for (let isoX = 0; isoX < this.width; isoX += 1) {
+                if (this.map[isoY][isoX]) {
+                    continue;
+                }
+
+                let { x, y } = this.isoToCoordinate(isoX, isoY);
+                x -= this.backgroundOffsetX;
+                y -= this.backgroundOffsetY;
+
+                let drawWidth = TILE_WIDTH;
+
+                if (this.exit.x === isoX && this.exit.y === isoY) {
+                    drawWidth = drawWidth / 2 + 8;
+                }
+
+                const { canvas } =getShaded(this.tileImage, this.backgroundImage, x, y, 0.33);
+
+                this.roomContext.drawImage(
+                    canvas,
+                    0,
+                    0,
+                    drawWidth,
+                    TILE_HEIGHT,
+                    x,
+                    y,
+                    drawWidth,
+                    TILE_HEIGHT
+                );
+            }
+        }
+    }
+
+    drawWalls() {
+        for (const [wallIndex, wallSection] of Object.entries(this.walls)) {
+            const image =
+                wallSection.orientation === 'left'
+                    ? this.wallLeftImage
+                    : this.wallRightImage;
+
+            const deltaY = 18 * (wallSection.orientation === 'left' ? -1 : 1);
+
+            let drawX = wallSection.offsetX;
+            let drawY = wallSection.offsetY;
+
+            for (let i = 0; i < wallSection.width; i += 1) {
+                const { context, canvas } = getShaded(image, this.backgroundImage, drawX, drawY);
+
+                const isExit =
+                    +wallIndex === this.exit.wall[0] && i === this.exit.wall[1];
+
+                if (isExit) {
+                    context.globalAlpha = 1;
+                    cutPolygon(context, this.exit.clip);
+                }
+
+                this.roomContext.drawImage(canvas, drawX, drawY);
+                document.body.appendChild(canvas);
+
+                drawY += deltaY;
+                drawX += TILE_HEIGHT;
+            }
+        }
+    }
+
+    drawRoom() {
+        this.roomContext.drawImage(this.backgroundImage, 0, 0);
+        this.drawTiles();
+        this.drawWalls();
+    }
+
+    init() {
+        const character = new Character(this.game, this, {});
+        this.characters.push(character);
+
+        this.drawRoom();
     }
 
     // are we selecting a tile with the mouse?
