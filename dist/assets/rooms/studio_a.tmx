@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.5" tiledversion="1.7.2" orientation="isometric" renderorder="right-down" width="6" height="11" tilewidth="70" tileheight="36" infinite="0" nextlayerid="3" nextobjectid="1">
+ <editorsettings>
+  <export target="studio_a.json" format="json"/>
+ </editorsettings>
+ <properties>
+  <property name="background_height" type="int" value="452"/>
+  <property name="background_width" type="int" value="614"/>
+ </properties>
+ <layer id="1" name="obstacle" width="6" height="11" tintcolor="#dc8add" offsetx="25" offsety="110">
+  <data encoding="csv">
+0,0,0,0,0,0,
+0,0,0,0,0,0,
+0,0,0,0,0,0,
+0,0,0,0,0,0,
+0,0,0,0,0,0,
+0,0,0,0,0,0,
+0,0,0,0,0,0,
+0,0,0,0,0,0,
+0,0,0,0,0,0,
+0,0,0,0,0,0,
+0,0,0,0,0,0
+</data>
+ </layer>
+ <imagelayer id="2" name="background">
+  <image source="studio_a.png" width="614" height="452"/>
+ </imagelayer>
+</map>
