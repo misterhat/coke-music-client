@@ -25,5 +25,8 @@
   "homepage": "https://github.com/misterhat/coke-music-client#readme",
   "devDependencies": {
     "browserify": "^17.0.0"
+  },
+  "dependencies": {
+    "@swiftcarrot/color-fns": "^3.2.0"
   }
 }
