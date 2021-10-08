@@ -24,7 +24,8 @@ const PRELOAD_IMAGES = [
     '/character/faces.png',
     '/character/eyes.png',
     '/character/hair.png',
-    '/character/hats.png'
+    '/character/hats.png',
+    '/character/bodies.png'
 ];
 
 function getMousePosition(canvas, e) {
