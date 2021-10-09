@@ -1,3 +1,4 @@
+const Login = require('./login');
 const Room = require('./room');
 
 const WIDTH = 800;
@@ -40,22 +41,37 @@ function getMousePosition(canvas, e) {
 }
 
 class Game {
-    constructor(container) {
+    constructor(container, { server, port, ssl } = {}) {
         this.container = container;
 
+        this.server = server || 'localhost';
+        this.port = port || 43594;
+        this.ssl = !!ssl;
+
         this.canvas = document.createElement('canvas');
+
         this.canvas.width = WIDTH;
         this.canvas.height = HEIGHT;
 
         this.context = this.canvas.getContext('2d');
 
+        // { preloaded imaged name: Image }
         this.images = {};
 
         this.mouseX = 0;
         this.mouseY = 0;
         this.mouseDown = false;
 
+        this.loadingDiv = document.getElementById('coke-music-loading');
+
         this.addEventListeners();
+
+        this.states = {
+            login: new Login(this),
+            room: new Room(this)
+        };
+
+        this.socket = null;
 
         this.boundDraw = this.draw.bind(this);
         this.boundUpdate = this.update.bind(this);
@@ -68,6 +84,10 @@ class Game {
             this.mouseX = x;
             this.mouseY = y;
         });
+
+        this.canvas.addEventListener('mousedown', (event) => {
+            this.mouseDown = true;
+        });
     }
 
     // preload image and JSON assets
@@ -77,6 +97,7 @@ class Game {
         return new Promise((resolve, reject) => {
             for (const image of PRELOAD_IMAGES) {
                 const img = new Image();
+
                 this.images[image] = img;
 
                 img.onerror = () => {
@@ -96,12 +117,58 @@ class Game {
         });
     }
 
-    start() {
+    // connect to the websockets
+    connect() {
+        return new Promise((resolve, reject) => {
+            const socket = new WebSocket(
+                `ws${this.ssl ? 's' : ''}://${this.server}:${this.port}`
+            );
+
+            const onOpen = () => {
+                this.socket = socket;
+                resolve();
+                socket.removeEventListener('open', open);
+            };
+
+
+            const onError = (err) => {
+                reject(err);
+                socket.removeEventListener('error', onError);
+            };
+
+            socket.addEventListener('error', (err) => {
+                console.error(err);
+            });
+
+            socket.addEventListener('error', onError);
+            socket.addEventListener('open', onOpen);
+        });
+    }
+
+    // write to socket
+    write(message) {
+        this.socket.send(JSON.stringify(message));
+    }
+
+    changeState(newState, properties) {
+        if (this.state) {
+            this.state.destroy();
+        }
+
+        this.state = this.states[newState];
+        this.state.init(properties);
+    }
+
+    async start() {
+        await this.load();
+        await this.connect();
+
+        this.loadingDiv.style.display = 'none';
+
         this.container.appendChild(this.canvas);
 
-        this.state = new Room(this, { name: 'studio_c' });
-
-        this.state.init();
+        //this.changeState('room', { name: 'studio_a' });
+        this.changeState('login');
 
         this.update();
         this.draw();

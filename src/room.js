@@ -7,50 +7,15 @@ const TILE_WIDTH = 70;
 const TILE_HEIGHT = 36;
 
 class Room {
-    constructor(game, { name, wallType, tileType }) {
+    constructor(game) {
         this.game = game;
-        this.name = name;
 
         this.tileWidth = TILE_WIDTH;
         this.tileHeight = TILE_HEIGHT;
 
-        Object.assign(this, rooms[this.name]);
-
-        this.width = this.map[0].length;
-        this.height = this.map.length;
-
         this.objects = [];
         this.wallObjects = [];
         this.characters = [];
-
-        // the base background image without any custom walls or tiles applied
-        this.backgroundImage = this.game.images[`/rooms/${name}.png`];
-
-        // a buffered image of the background with walls and tiles applied
-        this.roomImage = document.createElement('canvas');
-
-        this.roomImage.width = this.backgroundImage.width;
-        this.roomImage.height = this.backgroundImage.width;
-
-        this.roomContext = this.roomImage.getContext('2d');
-
-        // unshaded wall sprites
-        this.wallLeftImage = this.game.images['/walls/wall_a_left.png'];
-        this.wallRightImage = this.game.images['/walls/wall_a_right.png'];
-
-        // offsets used to centre the room image
-        this.backgroundOffsetX = Math.floor(
-            this.game.canvas.width / 2 - this.backgroundImage.width / 2
-        );
-
-        this.backgroundOffsetY = Math.floor(
-            this.game.canvas.height / 2 - this.backgroundImage.height / 2
-        );
-
-        this.tileImage = this.game.images['/tiles/purple_carpet.png'];
-
-        // the yellow tile-select image
-        this.tileSelectImage = this.game.images['/tiles/selected.png'];
 
         // cartesian coordinates of where to draw tileSelectImage
         this.tileSelectX = -1;
@@ -168,9 +133,75 @@ class Room {
         this.drawWalls();
     }
 
-    init() {
-        const character = new Character(this.game, this, {});
-        this.characters.push(character);
+    init({ name, characters, wallType, tileType }) {
+        this.name = name;
+
+        Object.assign(this, rooms[this.name]);
+
+        this.width = this.map[0].length;
+        this.height = this.map.length;
+
+        // the base background image without any custom walls or tiles applied
+        this.backgroundImage = this.game.images[`/rooms/${name}.png`];
+
+        // a buffered image of the background with walls and tiles applied
+        this.roomImage = document.createElement('canvas');
+
+        this.roomImage.width = this.backgroundImage.width;
+        this.roomImage.height = this.backgroundImage.width;
+
+        this.roomContext = this.roomImage.getContext('2d');
+
+        // unshaded wall sprites
+        this.wallLeftImage = this.game.images['/walls/wall_a_left.png'];
+        this.wallRightImage = this.game.images['/walls/wall_a_right.png'];
+
+        // offsets used to centre the room image
+        this.backgroundOffsetX = Math.floor(
+            this.game.canvas.width / 2 - this.backgroundImage.width / 2
+        );
+
+        this.backgroundOffsetY = Math.floor(
+            this.game.canvas.height / 2 - this.backgroundImage.height / 2
+        );
+
+        this.tileImage = this.game.images['/tiles/purple_carpet.png'];
+
+        // the yellow tile-select image
+        this.tileSelectImage = this.game.images['/tiles/selected.png'];
+
+        for (const { username, x, y } of characters) {
+            const character = new Character(this.game, this, {});
+
+            character.x = x;
+            character.y = y;
+
+            this.characters.push(character);
+        }
+
+        this.character = this.characters[characters.length - 1];
+
+        this.game.socket.addEventListener('message', ({ data} ) => {
+            try {
+                data = JSON.parse(data);
+            } catch (e) {
+                console.error(`malformed json ${data}`);
+            }
+
+            if (data.type === 'add-character') {
+                const character = new Character(this.game, this, {});
+
+                character.x = data.x;
+                character.y = data.y;
+
+                this.characters.push(character);
+            } else if (data.type === 'move-character') {
+                console.log(this.characters);
+
+                this.characters[data.index].x = data.x;
+                this.characters[data.index].y = data.y;
+            }
+        });
 
         this.drawRoom();
     }
@@ -205,6 +236,19 @@ class Room {
 
         this.tileSelectX = tileX;
         this.tileSelectY = tileY;
+
+        if (this.game.mouseDown) {
+            this.game.mouseDown = false;
+
+            this.game.write({
+                type: 'walk',
+                x: isoX,
+                y: isoY
+            });
+
+            this.character.x = isoX;
+            this.character.y = isoY;
+        }
     }
 
     draw() {

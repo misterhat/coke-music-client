@@ -1,12 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <title>Coke Music</title>
-    <link type="text/css" rel="stylesheet" href="/style.css">
-  </head>
-  <body>
-    <div id="coke-music-container" class="coke-music-container"></div>
-    <script src="/index.bundle.js"></script>
-  </body>
+    <head>
+        <meta charset="utf-8" />
+        <title>Coke Music</title>
+        <link type="text/css" rel="stylesheet" href="/style.css" />
+    </head>
+    <body>
+        <div id="coke-music-container" class="coke-music-container">
+            <div id="coke-music-loading" class="coke-music-loading">
+                Loading...
+            </div>
+
+            <div id="coke-music-login" class="coke-music-panel coke-music-login">
+                <h2>Log In</h2>
+
+                <div>
+                    <input
+                        id="coke-music-login-username"
+                        type="text"
+                        placeholder="Enter username..."
+                    />
+                    <input
+                        id="coke-music-login-password"
+                        type="password"
+                        placeholder="Enter password..."
+                    />
+                </div>
+
+                <button id="coke-music-login-button" class="coke-music-button">
+                    Login
+                </button>
+
+                <p>
+                    Don't have an account?
+                    <button class="coke-music-link">
+                        Click here to register.
+                    </button>
+                </p>
+            </div>
+        </div>
+        <script src="/index.bundle.js"></script>
+    </body>
 </html>

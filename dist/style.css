@@ -1,4 +1,77 @@
-.coke-music-container {
+body {
     /*background-color: #000;*/
+}
+
+.coke-music-container {
+    background-color: #000;
+    color: #fff;
+    font-family: sans-serif;
+    font-size: 14px;
+    height: 600px;
     position: relative;
+    width: 800px;
+}
+
+.coke-music-loading {
+    position: absolute;
+    text-align: center;
+    width: 200px;
+    left: 300px;
+    font-size: 24px;
+    top: 300px;
+}
+
+.coke-music-container input,
+.coke-music-container button {
+    border: 0;
+    display: inline-block;
+    height: 18px;
+    margin: 4px;
+}
+
+.coke-music-button {
+    background-color: #fff;
+    color: #000;
+}
+
+.coke-music-container button:hover {
+    cursor: pointer;
+    background-color: none;
+}
+
+.coke-music-link {
+    background-color: transparent;
+    color: inherit;
+    display: inline;
+    margin: 0;
+    padding: 0;
+    text-decoration: underline;
+}
+
+.coke-music-container h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    margin: 4px;
+    padding: 0;
+    font-size: 18px;
+}
+
+.coke-music-panel {
+    position: absolute;
+    z-index: 1;
+    display: none;
+    background-color: #000;
+    color: #fff;
+    border: 2px dashed #666;
+}
+
+.coke-music-login {
+    width: 400px;
+    top: 0;
+    left: 200px;
+    top: 200px;
+    text-align: center;
 }
