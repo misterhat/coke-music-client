@@ -1,15 +1,22 @@
 body {
-    /*background-color: #000;*/
+    background-color: #000;
 }
 
 .coke-music-container {
     background-color: #000;
-    color: #fff;
+    color: #eddbc5;
+    /*text-shadow: #000 1px 1px;*/
     font-family: sans-serif;
-    font-size: 14px;
+    font-size: 12px;
     height: 600px;
+    margin-left: auto;
+    margin-right: auto;
     position: relative;
     width: 800px;
+}
+
+.coke-music-container p {
+    margin: 4px;
 }
 
 .coke-music-loading {
@@ -21,17 +28,44 @@ body {
     top: 300px;
 }
 
+.coke-music-container input {
+    font-size: 12px;
+    background: url(/assets/input.png) repeat-x;
+    height: 20px;
+    color: #000;
+    border-style: solid;
+    border-width: 0 1px 0 1px;
+    border-color: #c8ac7d;
+    height: 18px;
+    box-sizing: border-box;
+    padding: 4px;
+}
+
 .coke-music-container input,
 .coke-music-container button {
-    border: 0;
     display: inline-block;
-    height: 18px;
+    font-family: inherit;
     margin: 4px;
 }
 
+.coke-music-container input:focus {
+    outline-width: 0;
+}
+
+.coke-music-error {
+    color: #f00;
+}
+
 .coke-music-button {
-    background-color: #fff;
-    color: #000;
+    background-image: url(/assets/button_middle.png);
+    color: #fff;
+    border-radius: 6px;
+    font-size: 10px;
+    border: 0;
+}
+
+.coke-music-button:hover {
+    text-decoration: underline;
 }
 
 .coke-music-container button:hover {
@@ -40,12 +74,16 @@ body {
 }
 
 .coke-music-link {
+    border: 0;
     background-color: transparent;
     color: inherit;
     display: inline;
+    font-family: inherit;
+    font-size: inherit;
     margin: 0;
     padding: 0;
     text-decoration: underline;
+    text-shadow: inherit;
 }
 
 .coke-music-container h1,
@@ -54,24 +92,63 @@ h3,
 h4,
 h5,
 h6 {
+    text-shadow: #000 1px 1px;
+    font-size: 14px;
+    font-weight: bold;
     margin: 4px;
     padding: 0;
-    font-size: 18px;
 }
 
 .coke-music-panel {
-    position: absolute;
-    z-index: 1;
+    background-image: url(/assets/background.png);
+    border-radius: 4px;
+    border: 1px solid #000;
     display: none;
-    background-color: #000;
-    color: #fff;
-    border: 2px dashed #666;
+    position: absolute;
+    z-index: 3;
+    box-sizing: border-box;
+    padding: 4px;
+}
+
+.coke-music-paper {
+    width: 292px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 8px;
+    background: url(/assets/paper-middle.png);
+    /*background-position: center;*/
+    border-radius: 8px;
+    padding: 2px;
+    box-sizing: border-box;
+    color: #6c472d;
 }
 
 .coke-music-login {
-    width: 400px;
+    width: 328px;
     top: 0;
-    left: 200px;
-    top: 200px;
+    /*left: 236px;*/
+    left: 418px;
+    /*top: 200px;*/
+    top: 224px;
     text-align: center;
+}
+
+.coke-music-status {
+    background: url(/assets/status.png) no-repeat;
+    width: 758px;
+    height: 62px;
+    position: absolute;
+    bottom: 0;
+    z-index: 1;
+    left: 22px;
+}
+
+.coke-music-shadow {
+    box-shadow: inset 0 0 6px 24px #000;
+    width: 100%;
+    height: 96%;
+    position: absolute;
+    top: 44px;
+    left: 0;
+    z-index: 2;
 }

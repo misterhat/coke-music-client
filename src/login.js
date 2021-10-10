@@ -2,7 +2,9 @@ class Login {
     constructor(game) {
         this.game = game;
 
-        this.loginPanel = document.getElementById('coke-music-login');
+        this.panel = document.getElementById('coke-music-login');
+
+        this.loginError = document.getElementById('coke-music-login-error');
 
         this.usernameInput = document.getElementById(
             'coke-music-login-username'
@@ -13,47 +15,92 @@ class Login {
         );
 
         this.loginButton = document.getElementById('coke-music-login-button');
+    }
 
-        // TODO put event listeners in map and remove them in destroy
+    showError(message) {
+        this.loginError.style.display = 'block';
+        this.loginButton.disabled = false;
+        this.loginError.textContent = message;
     }
 
     addEventListeners() {
-        this.game.socket.addEventListener('message', ({ data }) => {
-            try {
-                data = JSON.parse(data);
-            } catch (e) {
-                console.error(`malformed json ${data}`);
-            }
+        this.onMessage = (message) => {
+            console.log('got message', message);
+        };
 
-            if (data.type === 'login-response' && data.success) {
-                this.game.changeState('room', data.studio);
-            }
-        });
+        this.game.on('message', this.onMessage);
 
-        this.loginButton.addEventListener('click', () => {
+        this.onLoginClick = async () => {
             this.loginButton.disabled = true;
 
-            this.game.write({
-                type: 'login',
-                username: this.usernameInput.value.trim(),
-                password: this.passwordInput.value.trim()
-            });
-        });
+            const username = this.usernameInput.value.trim();
+            const password = this.passwordInput.value.trim();
+
+            if (!username.length || !password.length) {
+                this.showError('Please enter a username and password.');
+                return;
+            }
+
+            try {
+                await this.game.connect();
+            } catch (e) {
+                this.showError('Unable to connect.');
+                return;
+            }
+
+            this.game.write({ type: 'login', username, password });
+        };
+
+        this.loginButton.addEventListener('click', this.onLoginClick);
+
+        this.onUsernameEnter = (event) => {
+            if (event.key === 'Enter') {
+                this.passwordInput.focus();
+            }
+        };
+
+        this.usernameInput.addEventListener('keypress', this.onUsernameEnter);
     }
 
     init() {
-        this.loginPanel.style.display = 'block';
+        this.addEventListeners();
+
+        this.panel.style.display = 'block';
+        this.loginError.style.display = 'none';
         this.loginButton.disabled = false;
 
-        this.addEventListeners();
+        this.backgroundImage = this.game.images['/entry.png'];
+
+        this.backgroundOffsetX = Math.floor(
+            this.game.canvas.width / 2 - this.backgroundImage.width / 2
+        );
+
+        this.backgroundOffsetY = Math.floor(
+            this.game.canvas.height / 2 - this.backgroundImage.height / 2
+        );
     }
 
     update() {}
 
-    draw() {}
+    draw() {
+        const { context } = this.game;
+
+        context.drawImage(
+            this.backgroundImage,
+            this.backgroundOffsetX,
+            this.backgroundOffsetY
+        );
+    }
 
     destroy() {
-        this.loginPanel.style.display = 'none';
+        this.game.removeListener('message', this.onMessage);
+        this.loginButton.removeEventListener('click', this.onLoginClick);
+        this.usernameInput.removeEventListener(
+            'keypress',
+            this.onUsernameEnter
+        );
+
+        this.panel.style.display = 'none';
     }
 }
 

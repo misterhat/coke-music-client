@@ -1,10 +1,13 @@
 const Login = require('./login');
 const Room = require('./room');
+const {EventEmitter} = require('events');
 
 const WIDTH = 800;
 const HEIGHT = 600;
 
 const PRELOAD_IMAGES = [
+    '/entry.png',
+
     // TODO we can automatically populate this based on room.json data
     '/rooms/studio_a.png',
     '/rooms/studio_b.png',
@@ -40,8 +43,10 @@ function getMousePosition(canvas, e) {
     };
 }
 
-class Game {
+class Game extends EventEmitter {
     constructor(container, { server, port, ssl } = {}) {
+        super();
+
         this.container = container;
 
         this.server = server || 'localhost';
@@ -126,6 +131,23 @@ class Game {
 
             const onOpen = () => {
                 this.socket = socket;
+
+                socket.addEventListener('message', ({ data }) => {
+                    try {
+                        data = JSON.parse(data);
+                    } catch (e) {
+                        console.error(`malformed json ${data}`);
+                    }
+
+                    this.emit('message', data);
+                });
+
+                socket.addEventListener('close', () => {
+                    this.changeState('login');
+                    this.state.showError('Server disconnected.');
+                });
+
+
                 resolve();
                 socket.removeEventListener('open', open);
             };
@@ -134,6 +156,7 @@ class Game {
             const onError = (err) => {
                 reject(err);
                 socket.removeEventListener('error', onError);
+                socket.removeEventListener('open', onOpen);
             };
 
             socket.addEventListener('error', (err) => {
@@ -142,6 +165,7 @@ class Game {
 
             socket.addEventListener('error', onError);
             socket.addEventListener('open', onOpen);
+
         });
     }
 
@@ -161,13 +185,11 @@ class Game {
 
     async start() {
         await this.load();
-        await this.connect();
 
         this.loadingDiv.style.display = 'none';
 
         this.container.appendChild(this.canvas);
 
-        //this.changeState('room', { name: 'studio_a' });
         this.changeState('login');
 
         this.update();
