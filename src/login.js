@@ -25,7 +25,16 @@ class Login {
 
     addEventListeners() {
         this.onMessage = (message) => {
-            console.log('got message', message);
+            if (message.type === 'login-response') {
+                if (!message.success) {
+                    this.showError(message.error);
+                    return;
+                }
+
+                this.game.characterID = message.id;
+
+                this.game.changeState('entry');
+            }
         };
 
         this.game.on('message', this.onMessage);
@@ -60,6 +69,14 @@ class Login {
         };
 
         this.usernameInput.addEventListener('keypress', this.onUsernameEnter);
+
+        this.onPasswordEnter = (event) => {
+            if (event.key === 'Enter') {
+                this.onLoginClick();
+            }
+        };
+
+        this.passwordInput.addEventListener('keypress', this.onPasswordEnter);
     }
 
     init() {
@@ -94,10 +111,19 @@ class Login {
 
     destroy() {
         this.game.removeListener('message', this.onMessage);
+
         this.loginButton.removeEventListener('click', this.onLoginClick);
+
         this.usernameInput.removeEventListener(
             'keypress',
             this.onUsernameEnter
+        );
+
+        this.passwordInput.value = '';
+
+        this.passwordInput.removeEventListener(
+            'keypress',
+            this.onPasswordEnter
         );
 
         this.panel.style.display = 'none';

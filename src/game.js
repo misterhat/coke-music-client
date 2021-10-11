@@ -1,6 +1,7 @@
+const Entry = require('./entry');
 const Login = require('./login');
 const Room = require('./room');
-const {EventEmitter} = require('events');
+const { EventEmitter } = require('events');
 
 const WIDTH = 800;
 const HEIGHT = 600;
@@ -73,7 +74,8 @@ class Game extends EventEmitter {
 
         this.states = {
             login: new Login(this),
-            room: new Room(this)
+            room: new Room(this),
+            entry: new Entry(this)
         };
 
         this.socket = null;
@@ -83,14 +85,14 @@ class Game extends EventEmitter {
     }
 
     addEventListeners() {
-        this.canvas.addEventListener('mousemove', (event) => {
+        this.container.addEventListener('mousemove', (event) => {
             const { x, y } = getMousePosition(this.canvas, event);
 
             this.mouseX = x;
             this.mouseY = y;
         });
 
-        this.canvas.addEventListener('mousedown', (event) => {
+        this.container.addEventListener('mousedown', (event) => {
             this.mouseDown = true;
         });
     }
@@ -147,11 +149,9 @@ class Game extends EventEmitter {
                     this.state.showError('Server disconnected.');
                 });
 
-
                 resolve();
                 socket.removeEventListener('open', open);
             };
-
 
             const onError = (err) => {
                 reject(err);
@@ -165,7 +165,6 @@ class Game extends EventEmitter {
 
             socket.addEventListener('error', onError);
             socket.addEventListener('open', onOpen);
-
         });
     }
 

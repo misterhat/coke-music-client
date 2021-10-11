@@ -13,9 +13,9 @@ class Room {
         this.tileWidth = TILE_WIDTH;
         this.tileHeight = TILE_HEIGHT;
 
-        this.objects = [];
-        this.wallObjects = [];
-        this.characters = [];
+        this.objects = new Set();
+        this.wallObjects = new Set();
+        this.characters = new Map();
 
         // cartesian coordinates of where to draw tileSelectImage
         this.tileSelectX = -1;
@@ -134,6 +134,8 @@ class Room {
     }
 
     init({ name, characters, wallType, tileType }) {
+        this.game.mouseDown = false;
+
         this.name = name;
 
         Object.assign(this, rooms[this.name]);
@@ -170,38 +172,47 @@ class Room {
         // the yellow tile-select image
         this.tileSelectImage = this.game.images['/tiles/selected.png'];
 
-        for (const { username, x, y } of characters) {
+        this.onMessage = (message) => {
+            switch (message.type) {
+                case 'add-character': {
+                    const character = new Character(this.game, this, {});
+                    character.x = message.x;
+                    character.y = message.y;
+                    character.id = message.id;
+                    this.characters.set(character.id, character);
+                    break;
+                }
+                case 'remove-character': {
+                    this.characters.delete(message.id);
+                    break;
+                }
+                case 'move-character': {
+                    const character = this.characters.get(message.id);
+
+                    if (!character) {
+                        break;
+                    }
+
+                    character.x = message.x;
+                    character.y = message.y;
+                    break;
+                }
+            }
+        };
+
+        this.game.on('message', this.onMessage);
+
+        console.log(characters);
+
+        for (const { username, id, x, y } of characters) {
             const character = new Character(this.game, this, {});
 
             character.x = x;
             character.y = y;
+            character.id  = id;
 
-            this.characters.push(character);
+            this.characters.set(id, character);
         }
-
-        this.character = this.characters[characters.length - 1];
-
-        this.game.socket.addEventListener('message', ({ data} ) => {
-            try {
-                data = JSON.parse(data);
-            } catch (e) {
-                console.error(`malformed json ${data}`);
-            }
-
-            if (data.type === 'add-character') {
-                const character = new Character(this.game, this, {});
-
-                character.x = data.x;
-                character.y = data.y;
-
-                this.characters.push(character);
-            } else if (data.type === 'move-character') {
-                console.log(this.characters);
-
-                this.characters[data.index].x = data.x;
-                this.characters[data.index].y = data.y;
-            }
-        });
 
         this.drawRoom();
     }
@@ -212,7 +223,7 @@ class Room {
     }
 
     update() {
-        for (const character of this.characters) {
+        for (const character of this.characters.values()) {
             character.update();
         }
 
@@ -240,14 +251,7 @@ class Room {
         if (this.game.mouseDown) {
             this.game.mouseDown = false;
 
-            this.game.write({
-                type: 'walk',
-                x: isoX,
-                y: isoY
-            });
-
-            this.character.x = isoX;
-            this.character.y = isoY;
+            this.game.write({ type: 'walk', x: isoX, y: isoY });
         }
     }
 
@@ -268,12 +272,14 @@ class Room {
             );
         }
 
-        for (const character of this.characters) {
+        for (const character of this.characters.values()) {
             character.draw();
         }
     }
 
-    destroy() {}
+    destroy() {
+        this.game.removeListener('message', this.onMessage);
+    }
 }
 
 module.exports = Room;

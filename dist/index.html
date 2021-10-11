@@ -18,35 +18,74 @@
                 <h2>Log In</h2>
 
                 <div class="coke-music-paper">
+                    <p class="coke-music-error" id="coke-music-login-error"></p>
 
-                <p
-                    class="coke-music-error"
-                    id="coke-music-login-error"
-                ></p>
+                    <div>
+                        <input
+                            id="coke-music-login-username"
+                            type="text"
+                            placeholder="Enter username..."
+                        />
+                        <input
+                            id="coke-music-login-password"
+                            type="password"
+                            placeholder="Enter password..."
+                        />
+                    </div>
 
-                <div>
-                    <input
-                        id="coke-music-login-username"
-                        type="text"
-                        placeholder="Enter username..."
-                    />
-                    <input
-                        id="coke-music-login-password"
-                        type="password"
-                        placeholder="Enter password..."
-                    />
+                    <button
+                        id="coke-music-login-button"
+                        class="coke-music-button"
+                    >
+                        Log in
+                    </button>
+
+                    <p>
+                        Don't have an account?
+                        <button class="coke-music-link">
+                            Click here to register.
+                        </button>
+                    </p>
+                </div>
+            </div>
+            <div
+                id="coke-music-navigation"
+                class="coke-music-panel coke-music-navigation"
+            >
+                <h2>Coke Studios Navigation</h2>
+
+                <div class="coke-music-tabs">
+                    <button class="coke-music-tab">World View</button>
+                    <button class="coke-music-tab coke-music-tab-selected">
+                        User Studios
+                    </button>
+                    <button class="coke-music-tab">V-Egos</button>
+                    <div style="clear: both"></div>
                 </div>
 
-                <button id="coke-music-login-button" class="coke-music-button">
-                    Login
-                </button>
-
-                <p>
-                    Don't have an account?
-                    <button class="coke-music-link">
-                        Click here to register.
+                <div class="coke-music-paper" style="height: 194px">
+                    <button class="coke-music-button">
+                        Show Active Studios
                     </button>
-                </p>
+                    <button class="coke-music-button">Show My Studios</button>
+
+                    <div
+                        class="coke-music-table"
+                        style="height: calc(100% - 48px)"
+                    >
+                        <table>
+                            <thead>
+                                <tr style="border: 0">
+                                    <th style="width: 5%"></th>
+                                    <th style="width: 90%"></th>
+                                    <th style="width: 5%"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="coke-music-studio-table"></tbody>
+                        </table>
+                    </div>
+
+                    <button class="coke-music-button">Create Studio</button>
                 </div>
             </div>
             <div class="coke-music-status">&nbsp;</div>

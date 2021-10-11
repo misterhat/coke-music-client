@@ -1,7 +1,5 @@
 // set a polygon of an image to transparent
 function cutPolygon(context, points) {
-    console.log(points);
-
     const path = new Path2D();
     path.moveTo(points[0].x, points[0].y);
 
