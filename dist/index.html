@@ -7,10 +7,12 @@
     </head>
     <body>
         <div id="coke-music-container" class="coke-music-container">
+            <!-- loading screen (removed after images and json are preloaded) -->
             <div id="coke-music-loading" class="coke-music-loading">
                 Loading...
             </div>
 
+            <!-- login panel -->
             <div
                 id="coke-music-login"
                 class="coke-music-panel coke-music-login"
@@ -22,11 +24,13 @@
 
                     <div>
                         <input
+                            class="coke-music-input"
                             id="coke-music-login-username"
                             type="text"
                             placeholder="Enter username..."
                         />
                         <input
+                            class="coke-music-input"
                             id="coke-music-login-password"
                             type="password"
                             placeholder="Enter password..."
@@ -48,6 +52,8 @@
                     </p>
                 </div>
             </div>
+
+            <!-- navigation panel (post-login or toggled in rooms) -->
             <div
                 id="coke-music-navigation"
                 class="coke-music-panel coke-music-navigation"
@@ -88,7 +94,25 @@
                     <button class="coke-music-button">Create Studio</button>
                 </div>
             </div>
-            <div class="coke-music-status">&nbsp;</div>
+
+            <!-- chat messages -->
+            <ul
+                id="coke-music-chat-messages"
+                class="coke-music-chat-messages"
+            ></ul>
+
+            <!-- bottom status bar chat and navigation -->
+            <div class="coke-music-status">
+                <div id="coke-music-status-ingame">
+                    <input
+                        id="coke-music-chat-input"
+                        type="text"
+                        class="coke-music-input coke-music-chat-input"
+                        placeholder="Type here to chat..."
+                    />
+                </div>
+            </div>
+
             <div class="coke-music-shadow"></div>
         </div>
         <script src="/index.bundle.js"></script>

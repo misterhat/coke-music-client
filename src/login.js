@@ -15,6 +15,7 @@ class Login {
         );
 
         this.loginButton = document.getElementById('coke-music-login-button');
+        this.statusIngame = document.getElementById('coke-music-status-ingame');
     }
 
     showError(message) {
@@ -81,6 +82,8 @@ class Login {
 
     init() {
         this.addEventListeners();
+
+        this.statusIngame.style.display = 'none';
 
         this.panel.style.display = 'block';
         this.loginError.style.display = 'none';

@@ -299,8 +299,6 @@ class Character {
             if (angle === 3) {
                 this.image = baseSprite;
             }
-
-            document.body.appendChild(baseSprite);
         }
     }
 
