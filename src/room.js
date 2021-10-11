@@ -251,8 +251,7 @@ class Room {
                         break;
                     }
 
-                    character.x = message.x;
-                    character.y = message.y;
+                    character.move(message.x, message.y);
                     break;
                 }
                 case 'chat': {
