@@ -55,6 +55,12 @@ const WALK_ANGLE_DELTAS = {
     }
 };
 
+const ROTATED_OFFSETS = [
+    -16,
+    -17,
+    -13
+];
+
 // ne, e, se, s, n, [sw, w nw]
 
 class Character {
@@ -324,7 +330,7 @@ class Character {
 
             baseSpriteContext.drawImage(
                 this.sprites.idle[angle - 5],
-                0,
+                ROTATED_OFFSETS[angle - 5],
                 0
             );
 
