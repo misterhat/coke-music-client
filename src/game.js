@@ -30,7 +30,9 @@ const PRELOAD_IMAGES = [
     '/character/eyes.png',
     '/character/hair.png',
     '/character/hats.png',
-    '/character/bodies.png'
+    '/character/bodies.png',
+
+    '/message_name.png'
 ];
 
 function getMousePosition(canvas, e) {
@@ -94,6 +96,10 @@ class Game extends EventEmitter {
 
         this.container.addEventListener('mousedown', (event) => {
             this.mouseDown = true;
+        });
+
+        window.addEventListener('mouseup', () => {
+            this.mouseDown = false;
         });
     }
 

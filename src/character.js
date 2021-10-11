@@ -168,7 +168,7 @@ class Character {
                 HEAD_HEIGHT
             );
 
-            colourizeImage(eyeSpriteContext, this.eyeColour);
+            colourizeImage(eyeSprite, this.eyeColour);
 
             headSpriteContext.drawImage(
                 eyeSprite,
@@ -197,7 +197,7 @@ class Character {
             HAIR_HEIGHT
         );
 
-        colourizeImage(hairSpriteContext, this.hairColour);
+        colourizeImage(hairSprite, this.hairColour);
 
         headSpriteContext.drawImage(hairSprite, 0, 0);
 
@@ -223,7 +223,7 @@ class Character {
             );
 
             if (this.hatColour) {
-                colourizeImage(hatSpriteContext, this.hatColour);
+                colourizeImage(hatSprite, this.hatColour);
             }
 
             headSpriteContext.drawImage(hatSprite, 0, 0);

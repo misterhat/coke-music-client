@@ -22,11 +22,12 @@ body {
 
 .coke-music-loading {
     position: absolute;
-    text-align: center;
-    width: 200px;
-    left: 300px;
+    color: #fff;
     font-size: 24px;
+    left: 300px;
+    text-align: center;
     top: 300px;
+    width: 200px;
 }
 
 .coke-music-input {
@@ -230,11 +231,46 @@ h6 {
 }
 
 .coke-music-chat-messages {
-    position: absolute;
-    color: #fff;
+    color: #000;
+    font-size: 8px;
+    font-weight: bold;
+    height: 150px;
+    left: 0;
     list-style: none;
-    padding: 0;
     margin: 0;
-    left: 300px;
-    top: 100px;
+    overflow: hidden;
+    padding: 0;
+    pointer-events: none;
+    position: absolute;
+    top: 44px;
+    width: 758px;
+}
+
+.coke-music-chat-messages li {
+    position: relative;
+    display: inline-block;
+}
+
+.coke-music-chat-name, .coke-music-chat-message {
+    background-size: 100% 23px;
+    box-sizing: border-box;
+    display: inline-block;
+    height: 23px;
+    line-height: 23px;
+    margin-bottom: 2px;
+}
+
+.coke-music-chat-name {
+    background-repeat: no-repeat;
+    padding-left: 16px;
+    padding-right: 12px;
+    text-align: center;
+}
+
+.coke-music-chat-message {
+    background-image: url(/assets/message_background.png);
+    background-repeat: no-repeat;
+    max-width: 562px;
+    padding-left: 6px;
+    padding-right: 16px;
 }

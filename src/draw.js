@@ -75,15 +75,17 @@ function shadeImage(image, backgroundImage, offsetX, offsetY, intensity = 0.75) 
 }
 
 // use multiplication to colourize greyscale sprites
-function colourizeImage(context, colour) {
+function colourizeImage(canvas, colour) {
+    const context = canvas.getContext('2d');
+
     const imageData = context.getImageData(
         0,
         0,
-        70,
-        56
+        canvas.width,
+        canvas.height
     );
 
-    for (let i = 0; i < 70 * 56 * 4; i += 4) {
+    for (let i = 0; i < canvas.width * canvas.height * 4; i += 4) {
         const isGrey =
             imageData.data[i] === imageData.data[i + 1] &&
             imageData.data[i + 1] === imageData.data[i + 2] &&
