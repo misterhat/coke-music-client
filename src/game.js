@@ -83,7 +83,8 @@ class Game extends EventEmitter {
 
         this.socket = null;
 
-        this.frameMs = 1000 / 15;
+        // milliseconds per frame
+        this.frameMs = 1000 / 30;
 
         this.boundDraw = this.draw.bind(this);
         this.boundUpdate = this.update.bind(this);

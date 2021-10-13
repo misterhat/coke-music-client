@@ -143,7 +143,7 @@ class Character {
         this.toX = -1;
         this.toY = -1;
 
-        this.walkSpeed = 4;
+        this.walkSpeed = 5;
     }
 
     generateHeadSprite(angle) {
@@ -399,14 +399,26 @@ class Character {
 
     generateArmSprites() {}
 
+    resetAnimationOffset() {
+        this.x = this.toX;
+        this.y = this.toY;
+
+        this.drawOffsetX = 0;
+        this.drawOffsetY = 0;
+
+        this.toX = -1;
+        this.toY = -1;
+    }
+
     move(x, y) {
+        if (this.toX !== -1 || this.toY !== -1) {
+            this.resetAnimationOffset();
+        }
+
         const deltaX = this.x - x;
         const deltaY = this.y - y;
 
         this.image = this.sprites.idle[WALK_ANGLE_DELTAS[deltaX][deltaY]];
-
-        //this.x = x;
-        //this.y = y;
 
         this.toX = x;
         this.toY = y;
@@ -421,6 +433,14 @@ class Character {
 
         const distance = Math.sqrt(diffX * diffX + diffY * diffY);
 
+        const totalFrames = 500 / this.game.frameMs;
+        const pxPerFrame = distance / totalFrames;
+        this.walkSpeed = pxPerFrame;
+
+        this.startWalkTime = Date.now();
+
+        console.log(distance, this.walkSpeed);
+
         this.toDrawDeltaX = diffX / distance;
         this.toDrawDeltaY = diffY / distance;
 
@@ -433,30 +453,39 @@ class Character {
 
         drawY = drawY - 116 + 28;
 
+        let destX = drawX;
+        let destY = drawY;
+
         if (this.toX !== -1 || this.toY !== -1) {
-            if (Math.floor(drawX + this.drawOffsetX) !== this.toDrawX) {
-                this.drawOffsetX += this.toDrawDeltaX * this.walkSpeed;
+            this.drawOffsetX += this.toDrawDeltaX * this.walkSpeed;
+            destX += this.drawOffsetX;
+
+            this.drawOffsetY += this.toDrawDeltaY * this.walkSpeed;
+            destY += this.drawOffsetY;
+
+            if (
+                (this.toDrawDeltaX > 0 && destX > this.toDrawX) ||
+                (this.toDrawDeltaX < 0 && destX < this.toDrawX)
+            ) {
+                destX = this.toDrawX;
             }
 
-            if (Math.floor(drawY + this.drawOffsetY) !== this.toDrawY) {
-                this.drawOffsetY += this.toDrawDeltaY * this.walkSpeed;
+            if (
+                (this.toDrawDeltaY > 0 && destY > this.toDrawY) ||
+                (this.toDrawDeltaY < 0 && destY < this.toDrawY)
+            ) {
+                destY = this.toDrawY;
             }
 
-            const diffX = this.toDrawX - (drawX + this.drawOffsetX);
-            const diffY = this.toDrawY - (drawY + this.drawOffsetY);
+            const diffX = this.toDrawX - destX;
+            const diffY = this.toDrawY - destY;
 
             const distance = Math.sqrt(diffX * diffX + diffY * diffY);
 
             if (Math.floor(distance) === 0) {
-                this.x = this.toX;
-                this.y = this.toY;
+                this.resetAnimationOffset();
 
-                this.drawOffsetX = 0;
-                this.drawOffsetY = 0;
-
-                this.toX = -1;
-                this.toY = -1;
-
+                console.log('done ', Date.now() - this.startWalkTime);
                 return this.update();
             }
         }
