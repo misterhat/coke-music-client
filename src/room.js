@@ -1,6 +1,6 @@
 const Character = require('./character');
 const { cssColor } = require('@swiftcarrot/color-fns');
-const { cutPolygon, shadeImage, colourizeImage } = require('./draw');
+const { createCanvas, cutPolygon, shadeImage, colourizeImage } = require('./draw');
 
 const rooms = require('./rooms.json');
 
@@ -27,11 +27,16 @@ class Room {
         this.statusIngame = document.getElementById('coke-music-status-ingame');
 
         this.chatInput = document.getElementById('coke-music-chat-input');
+
         this.chatMessageList = document.getElementById(
             'coke-music-chat-messages'
         );
 
         this.messageLength = 0;
+
+        this.boundOnMessage = this.onMessage.bind(this);
+        this.boundOnChat = this.onChat.bind(this);
+        this.boundOnTab = this.onTab.bind(this);
     }
 
     // convert cartesian coordinates to isometric grid position
@@ -71,6 +76,7 @@ class Room {
                 }
 
                 let { x, y } = this.isoToCoordinate(isoX, isoY);
+
                 x -= this.backgroundOffsetX;
                 y -= this.backgroundOffsetY;
 
@@ -147,16 +153,17 @@ class Room {
 
         const messageLi = document.createElement('li');
 
-        const nameCanvas = document.createElement('canvas');
-        nameCanvas.width = this.nameImage.width;
-        nameCanvas.height = this.nameImage.height;
+        const { canvas: nameCanvas, context: nameContext } = createCanvas(
+            this.nameImage.width,
+            this.nameImage.height
+        );
 
-        const nameContext = nameCanvas.getContext('2d');
         nameContext.drawImage(this.nameImage, 0, 0);
 
         colourizeImage(nameCanvas, cssColor('#ff0000'));
 
         const nameSpan = document.createElement('span');
+
         nameSpan.className = 'coke-music-chat-name';
         nameSpan.style.backgroundImage = `url(${nameCanvas.toDataURL()})`;
         nameSpan.textContent = username;
@@ -164,13 +171,14 @@ class Room {
         messageLi.appendChild(nameSpan);
 
         const messageSpan = document.createElement('span');
+
         messageSpan.className = 'coke-music-chat-message';
         messageSpan.textContent = message;
 
         messageLi.appendChild(messageSpan);
 
         this.chatMessageList.style.top = `${
-            (Math.max(0, MAX_MESSAGES - this.messageLength) * 25) + 44
+            Math.max(0, MAX_MESSAGES - this.messageLength) * 25 + 44
         }px`;
 
         this.chatMessageList.appendChild(messageLi);
@@ -180,9 +188,73 @@ class Room {
 
         let { x } = this.isoToCoordinate(isoX, isoY);
         console.log(messageLi.offsetWidth);
-        x -= Math.floor(messageLi.offsetWidth/ 2);
+        x -= Math.floor(messageLi.offsetWidth / 2);
         x += TILE_WIDTH / 2;
         messageLi.style.left = `${x}px`;
+    }
+
+    onMessage(message) {
+        switch (message.type) {
+            case 'add-character': {
+                const character = new Character(this.game, this, {});
+                character.username = message.username;
+                character.x = message.x;
+                character.y = message.y;
+                character.id = message.id;
+                this.characters.set(character.id, character);
+                break;
+            }
+            case 'remove-character': {
+                this.characters.delete(message.id);
+                break;
+            }
+            case 'move-character': {
+                const character = this.characters.get(message.id);
+
+                if (!character) {
+                    break;
+                }
+
+                character.move(message.x, message.y);
+                break;
+            }
+            case 'chat': {
+                const character = this.characters.get(message.id);
+
+                if (!character) {
+                    break;
+                }
+
+                this.addChatMessage({
+                    username: character.username,
+                    message: message.message,
+                    x: message.x,
+                    y: message.y
+                });
+                break;
+            }
+        }
+    }
+
+    onChat(event) {
+        if (event.key === 'Enter') {
+            const message = this.chatInput.value.trim();
+
+            this.chatInput.value = '';
+
+            if (!message.length) {
+                return;
+            }
+
+            this.game.write({ type: 'chat', message });
+        }
+    }
+
+    onTab(event) {
+        if (event.key === 'Tab') {
+            event.preventDefault();
+            this.chatInput.focus();
+        }
     }
 
     init({ name, characters, wallType, tileType }) {
@@ -204,12 +276,12 @@ class Room {
         this.nameImage = this.game.images['/message_name.png'];
 
         // a buffered image of the background with walls and tiles applied
-        this.roomImage = document.createElement('canvas');
+        this.roomCanvas = document.createElement('canvas');
 
-        this.roomImage.width = this.backgroundImage.width;
-        this.roomImage.height = this.backgroundImage.width;
+        this.roomCanvas.width = this.backgroundImage.width;
+        this.roomCanvas.height = this.backgroundImage.width;
 
-        this.roomContext = this.roomImage.getContext('2d');
+        this.roomContext = this.roomCanvas.getContext('2d');
 
         // unshaded wall sprites
         this.wallLeftImage = this.game.images['/walls/wall_a_left.png'];
@@ -229,75 +301,10 @@ class Room {
         // the yellow tile-select image
         this.tileSelectImage = this.game.images['/tiles/selected.png'];
 
-        this.onMessage = (message) => {
-            switch (message.type) {
-                case 'add-character': {
-                    const character = new Character(this.game, this, {});
-                    character.username = message.username;
-                    character.x = message.x;
-                    character.y = message.y;
-                    character.id = message.id;
-                    this.characters.set(character.id, character);
-                    break;
-                }
-                case 'remove-character': {
-                    this.characters.delete(message.id);
-                    break;
-                }
-                case 'move-character': {
-                    const character = this.characters.get(message.id);
+        this.game.on('message', this.boundOnMessage);
 
-                    if (!character) {
-                        break;
-                    }
-
-                    character.move(message.x, message.y);
-                    break;
-                }
-                case 'chat': {
-                    const character = this.characters.get(message.id);
-
-                    if (!character) {
-                        break;
-                    }
-
-                    this.addChatMessage({
-                        username: character.username,
-                        message: message.message,
-                        x: message.x,
-                        y: message.y
-                    });
-                    break;
-                }
-            }
-        };
-
-        this.game.on('message', this.onMessage);
-
-        this.onChat = (event) => {
-            if (event.key === 'Enter') {
-                const message = this.chatInput.value.trim();
-
-                this.chatInput.value = '';
-
-                if (!message.length) {
-                    return;
-                }
-
-                this.game.write({ type: 'chat', message });
-            }
-        };
-
-        this.chatInput.addEventListener('keypress', this.onChat);
-
-        this.onTab = (event) => {
-            if (event.key === 'Tab') {
-                event.preventDefault();
-                this.chatInput.focus();
-            }
-        };
-
-        window.addEventListener('keypress', this.onTab);
+        this.chatInput.addEventListener('keypress', this.boundOnChat);
+        window.addEventListener('keypress', this.boundOnTab);
 
         for (const { username, id, x, y } of characters) {
             const character = new Character(this.game, this, {});
@@ -355,7 +362,7 @@ class Room {
         const { context } = this.game;
 
         context.drawImage(
-            this.roomImage,
+            this.roomCanvas,
             this.backgroundOffsetX,
             this.backgroundOffsetY
         );
@@ -379,10 +386,11 @@ class Room {
 
     destroy() {
         this.clearChatMessages();
-        this.chatInput.removeEventListener('keypress', this.onChat);
-        window.removeEventListener('keypress', this.onTab);
 
-        this.game.removeListener('message', this.onMessage);
+        this.chatInput.removeEventListener('keypress', this.boundOnChat);
+        window.removeEventListener('keypress', this.boundOnTab);
+
+        this.game.removeListener('message', this.boundOnMessage);
     }
 }
 
