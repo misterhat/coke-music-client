@@ -1,4 +1,4 @@
-const { colourizeImage } = require('./draw');
+const { createCanvas, colourizeImage } = require('./draw');
 const { cssColor } = require('@swiftcarrot/color-fns');
 
 const CHARACTER_HEIGHT = 102;
@@ -66,6 +66,7 @@ const WALK_ANGLE_DELTAS = {
 const ROTATED_OFFSETS = [-16, -17, -13];
 
 // { angle: [ { index: armIndex, x, y, rotate: false } ] }
+// TODO make sub-arrays for animations
 const ARM_OFFSETS = {
     0: [
         { index: 0, x: 12, y: 6 },
@@ -74,7 +75,8 @@ const ARM_OFFSETS = {
     1: [{ index: 1, x: 5, y: 6 }],
     2: [
         { index: 4, x: 9, y: 3 },
-        { index: 5, x: -2, y: 5 }
+        //{ index: 5, x: -2, y: 5 } right
+        { index: 6, x: 0, y: 5 }
     ],
     3: [
         { index: 6, x: 1, y: 3 },
@@ -102,7 +104,7 @@ class Character {
 
         this.image = this.game.images['/character_test.png'];
 
-        this.isFemale = true;
+        this.isFemale = false;
 
         this.angle = 3;
         this.headIndex = 0;
@@ -130,19 +132,29 @@ class Character {
         };
 
         this.generateSprites();
+
+        // used to drag the sprite in animation
+        this.toDrawX = 0;
+        this.toDrawY = 0;
+
+        this.drawOffsetX = 0;
+        this.drawOffsetY = 0;
+
+        this.toX = -1;
+        this.toY = -1;
+
+        this.walkSpeed = 4;
     }
 
     generateHeadSprite(angle) {
         // base canvas
-        const headSprite = document.createElement('canvas');
-
-        headSprite.width = HAIR_WIDTH;
-        headSprite.height = HAIR_HEIGHT;
-
-        const headSpriteContext = headSprite.getContext('2d');
+        const { canvas: headSprite, context: headContext } = createCanvas(
+            HAIR_WIDTH,
+            HAIR_HEIGHT
+        );
 
         // head
-        headSpriteContext.drawImage(
+        headContext.drawImage(
             this.game.images['/character/heads.png'],
             angle * HEAD_WIDTH,
             this.headIndex * HEAD_HEIGHT,
@@ -156,7 +168,7 @@ class Character {
 
         // face
         if (angle !== 0 && angle !== 4) {
-            headSpriteContext.drawImage(
+            headContext.drawImage(
                 this.game.images['/character/faces.png'],
                 (angle - 1) * HEAD_WIDTH,
                 this.faceIndex * (HEAD_HEIGHT * FACE_COUNT) +
@@ -171,30 +183,28 @@ class Character {
         }
 
         // skin tone
-        headSpriteContext.fillStyle = '#000';
-        headSpriteContext.globalCompositeOperation = 'source-atop';
-        headSpriteContext.globalAlpha = this.skinTone;
+        headContext.fillStyle = '#000';
+        headContext.globalCompositeOperation = 'source-atop';
+        headContext.globalAlpha = this.skinTone;
 
-        headSpriteContext.fillRect(
+        headContext.fillRect(
             HEAD_OFFSET_X,
             HEAD_OFFSET_Y,
             HEAD_WIDTH,
             HEAD_HEIGHT
         );
 
-        headSpriteContext.globalCompositeOperation = 'source-over';
-        headSpriteContext.globalAlpha = 1;
+        headContext.globalCompositeOperation = 'source-over';
+        headContext.globalAlpha = 1;
 
         // eyes
         if (angle !== 0 && angle !== 4) {
-            const eyeSprite = document.createElement('canvas');
+            const { canvas: eyeSprite, context: eyeContext } = createCanvas(
+                HEAD_WIDTH,
+                HEAD_HEIGHT
+            );
 
-            eyeSprite.width = HEAD_WIDTH;
-            eyeSprite.height = HEAD_HEIGHT;
-
-            const eyeSpriteContext = eyeSprite.getContext('2d');
-
-            eyeSpriteContext.drawImage(
+            eyeContext.drawImage(
                 this.game.images['/character/eyes.png'],
                 (angle - 1) * HEAD_WIDTH,
                 this.eyeIndex * (HEAD_HEIGHT * EYE_COUNT) +
@@ -209,22 +219,16 @@ class Character {
 
             colourizeImage(eyeSprite, this.eyeColour);
 
-            headSpriteContext.drawImage(
-                eyeSprite,
-                HEAD_OFFSET_X,
-                HEAD_OFFSET_Y
-            );
+            headContext.drawImage(eyeSprite, HEAD_OFFSET_X, HEAD_OFFSET_Y);
         }
 
         // hair
-        const hairSprite = document.createElement('canvas');
+        const { canvas: hairSprite, context: hairContext } = createCanvas(
+            HAIR_WIDTH,
+            HAIR_HEIGHT
+        );
 
-        hairSprite.width = HAIR_WIDTH;
-        hairSprite.height = HAIR_HEIGHT;
-
-        const hairSpriteContext = hairSprite.getContext('2d');
-
-        hairSpriteContext.drawImage(
+        hairContext.drawImage(
             this.game.images['/character/hair.png'],
             angle * HAIR_WIDTH,
             this.hairIndex * HAIR_HEIGHT,
@@ -238,18 +242,16 @@ class Character {
 
         colourizeImage(hairSprite, this.hairColour);
 
-        headSpriteContext.drawImage(hairSprite, 0, 0);
+        headContext.drawImage(hairSprite, 0, 0);
 
         // hat
         if (this.hatIndex !== -1) {
-            const hatSprite = document.createElement('canvas');
+            const { canvas: hatSprite, context: hatContext } = createCanvas(
+                HAIR_WIDTH,
+                HAIR_HEIGHT
+            );
 
-            hatSprite.width = HAIR_WIDTH;
-            hatSprite.height = HAIR_HEIGHT;
-
-            const hatSpriteContext = hatSprite.getContext('2d');
-
-            hatSpriteContext.drawImage(
+            hatContext.drawImage(
                 this.game.images['/character/hats.png'],
                 angle * HAIR_WIDTH,
                 this.hatIndex * HAIR_HEIGHT,
@@ -265,7 +267,7 @@ class Character {
                 colourizeImage(hatSprite, this.hatColour);
             }
 
-            headSpriteContext.drawImage(hatSprite, 0, 0);
+            headContext.drawImage(hatSprite, 0, 0);
         }
 
         return headSprite;
@@ -273,14 +275,12 @@ class Character {
 
     generateBodySprite(angle) {
         // base canvas
-        const bodySprite = document.createElement('canvas');
+        const { canvas: bodySprite, context: bodyContext } = createCanvas(
+            BODY_WIDTH,
+            BODY_HEIGHT
+        );
 
-        bodySprite.width = BODY_WIDTH;
-        bodySprite.height = BODY_HEIGHT;
-
-        const bodySpriteContext = bodySprite.getContext('2d');
-
-        bodySpriteContext.drawImage(
+        bodyContext.drawImage(
             this.game.images['/character/bodies.png'],
             angle * BODY_WIDTH,
             (this.isFemale ? BODY_COUNT * BODY_HEIGHT : 0) +
@@ -323,7 +323,7 @@ class Character {
                 ARM_SIZE
             );
 
-            bodySpriteContext.drawImage(
+            bodyContext.drawImage(
                 armCanvas,
                 0,
                 0,
@@ -337,14 +337,14 @@ class Character {
         }
 
         // skin tone
-        bodySpriteContext.fillStyle = '#000';
-        bodySpriteContext.globalCompositeOperation = 'source-atop';
-        bodySpriteContext.globalAlpha = this.skinTone;
+        bodyContext.fillStyle = '#000';
+        bodyContext.globalCompositeOperation = 'source-atop';
+        bodyContext.globalAlpha = this.skinTone;
 
-        bodySpriteContext.fillRect(0, 0, BODY_WIDTH, BODY_HEIGHT);
+        bodyContext.fillRect(0, 0, BODY_WIDTH, BODY_HEIGHT);
 
-        bodySpriteContext.globalCompositeOperation = 'source-over';
-        bodySpriteContext.globalAlpha = 1;
+        bodyContext.globalCompositeOperation = 'source-over';
+        bodyContext.globalAlpha = 1;
 
         return bodySprite;
     }
@@ -403,20 +403,66 @@ class Character {
         const deltaX = this.x - x;
         const deltaY = this.y - y;
 
-        console.log(deltaX, deltaY);
-
-        //console.log('deltas', deltaX, deltaY);
         this.image = this.sprites.idle[WALK_ANGLE_DELTAS[deltaX][deltaY]];
 
-        this.x = x;
-        this.y = y;
+        //this.x = x;
+        //this.y = y;
+
+        this.toX = x;
+        this.toY = y;
+
+        const { x: drawX, y: drawY } = this.room.isoToCoordinate(x, y);
+
+        this.toDrawX = drawX;
+        this.toDrawY = drawY - 116 + 28;
+
+        const diffX = this.toDrawX - this.drawX;
+        const diffY = this.toDrawY - this.drawY;
+
+        const distance = Math.sqrt(diffX * diffX + diffY * diffY);
+
+        this.toDrawDeltaX = diffX / distance;
+        this.toDrawDeltaY = diffY / distance;
+
+        this.drawOffsetX = 0;
+        this.drawOffsetY = 0;
     }
 
     update() {
-        const { x, y } = this.room.isoToCoordinate(this.x, this.y);
+        let { x: drawX, y: drawY } = this.room.isoToCoordinate(this.x, this.y);
 
-        this.drawX = x;
-        this.drawY = y - 116 + 28;
+        drawY = drawY - 116 + 28;
+
+        if (this.toX !== -1 || this.toY !== -1) {
+            if (Math.floor(drawX + this.drawOffsetX) !== this.toDrawX) {
+                this.drawOffsetX += this.toDrawDeltaX * this.walkSpeed;
+            }
+
+            if (Math.floor(drawY + this.drawOffsetY) !== this.toDrawY) {
+                this.drawOffsetY += this.toDrawDeltaY * this.walkSpeed;
+            }
+
+            const diffX = this.toDrawX - (drawX + this.drawOffsetX);
+            const diffY = this.toDrawY - (drawY + this.drawOffsetY);
+
+            const distance = Math.sqrt(diffX * diffX + diffY * diffY);
+
+            if (Math.floor(distance) === 0) {
+                this.x = this.toX;
+                this.y = this.toY;
+
+                this.drawOffsetX = 0;
+                this.drawOffsetY = 0;
+
+                this.toX = -1;
+                this.toY = -1;
+
+                return this.update();
+            }
+        }
+
+        this.drawX = drawX + this.drawOffsetX;
+        this.drawY = drawY + this.drawOffsetY;
     }
 
     draw() {

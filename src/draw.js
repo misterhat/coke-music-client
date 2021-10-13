@@ -1,4 +1,14 @@
 // TODO createCanvas -> canvas, context
+function createCanvas(width, height) {
+    const canvas = document.createElement('canvas');
+
+    canvas.width = width;
+    canvas.height = height;
+
+    const context = canvas.getContext('2d');
+
+    return { canvas, context };
+}
 
 // set a polygon of an image to transparent
 function cutPolygon(context, points) {
@@ -20,7 +30,13 @@ function cutPolygon(context, points) {
 }
 
 // apply background shading to an image
-function shadeImage(image, backgroundImage, offsetX, offsetY, intensity = 0.75) {
+function shadeImage(
+    image,
+    backgroundImage,
+    offsetX,
+    offsetY,
+    intensity = 0.75
+) {
     const imageCanvas = document.createElement('canvas');
     imageCanvas.width = image.width;
     imageCanvas.height = image.height;
@@ -80,12 +96,7 @@ function shadeImage(image, backgroundImage, offsetX, offsetY, intensity = 0.75) 
 function colourizeImage(canvas, colour) {
     const context = canvas.getContext('2d');
 
-    const imageData = context.getImageData(
-        0,
-        0,
-        canvas.width,
-        canvas.height
-    );
+    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
 
     for (let i = 0; i < canvas.width * canvas.height * 4; i += 4) {
         const isGrey =
@@ -107,6 +118,7 @@ function colourizeImage(canvas, colour) {
 }
 
 module.exports = {
+    createCanvas,
     cutPolygon,
     shadeImage,
     colourizeImage
