@@ -31,6 +31,7 @@ const PRELOAD_IMAGES = [
     '/character/hair.png',
     '/character/hats.png',
     '/character/bodies.png',
+    '/character/arms.png',
 
     '/message_name.png'
 ];

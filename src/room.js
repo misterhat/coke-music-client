@@ -224,7 +224,7 @@ class Room {
             this.game.canvas.height / 2 - this.backgroundImage.height / 2
         );
 
-        this.tileImage = this.game.images['/tiles/purple_carpet.png'];
+        this.tileImage = this.game.images['/tiles/brown_carpet.png'];
 
         // the yellow tile-select image
         this.tileSelectImage = this.game.images['/tiles/selected.png'];

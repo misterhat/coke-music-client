@@ -1,3 +1,5 @@
+// TODO createCanvas -> canvas, context
+
 // set a polygon of an image to transparent
 function cutPolygon(context, points) {
     const path = new Path2D();

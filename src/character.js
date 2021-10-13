@@ -3,7 +3,7 @@ const { cssColor } = require('@swiftcarrot/color-fns');
 
 const CHARACTER_HEIGHT = 102;
 
-// width of base head sprite in sprite sheet
+// size of base head sprite in spritesheet
 const HEAD_WIDTH = 30;
 const HEAD_HEIGHT = 32;
 
@@ -11,12 +11,16 @@ const HEAD_HEIGHT = 32;
 const HEAD_OFFSET_X = 20;
 const HEAD_OFFSET_Y = 19;
 
-// width of hair and accessories
+// size of hair and accessories
 const HAIR_WIDTH = 70;
 const HAIR_HEIGHT = 56;
 
+// size of body in spritesheet
 const BODY_WIDTH = 56;
 const BODY_HEIGHT = 70;
+
+// size of arms in spritesheet
+const ARM_SIZE = 36;
 
 // amount of sub-faces
 const FACE_COUNT = 6;
@@ -27,7 +31,7 @@ const EYE_COUNT = 5;
 // amount of sub-bodies
 const BODY_COUNT = 6;
 
-// offsets for applying the head sprite to the final image
+// offsets for applying the head sprite to the final character sprite
 const BODY_ANGLE_OFFSETS = [
     { x: 13, y: 43 },
     { x: 9, y: 42 },
@@ -37,29 +41,50 @@ const BODY_ANGLE_OFFSETS = [
 ];
 
 // [deltaX][deltaY] = spriteOffset
+// to determine which direction should display which sprite
 const WALK_ANGLE_DELTAS = {
-    '-1': { // west
+    '-1': {
+        // west
         1: 1, // south
         '-1': 3, // north
         0: 2
     },
-    1: { // east
+    1: {
+        // east
         1: 4, // south
         '-1': 6, // north east
         0: 5
     },
     0: {
-        1: 0,// south
+        1: 0, // south
         '-1': 7,
         0: 3
     }
 };
 
-const ROTATED_OFFSETS = [
-    -16,
-    -17,
-    -13
-];
+// x offsets for post-rotated character sprites
+const ROTATED_OFFSETS = [-16, -17, -13];
+
+// { angle: [ { index: armIndex, x, y, rotate: false } ] }
+const ARM_OFFSETS = {
+    0: [
+        { index: 0, x: 12, y: 6 },
+        { index: 2, x: -4, y: 5 }
+    ],
+    1: [{ index: 1, x: 5, y: 6 }],
+    2: [
+        { index: 4, x: 9, y: 3 },
+        { index: 5, x: -2, y: 5 }
+    ],
+    3: [
+        { index: 6, x: 1, y: 3 },
+        { index: 6, x: 18, y: 3, rotate: true }
+    ],
+    4: [
+        { index: 6, x: -2, y: 4 },
+        { index: 6, x: 17, y: 4, rotate: true }
+    ]
+};
 
 // ne, e, se, s, n, [sw, w nw]
 
@@ -268,17 +293,55 @@ class Character {
             BODY_HEIGHT
         );
 
+        // arms
+        for (const {
+            index: armIndex,
+            x: offsetX,
+            y: offsetY,
+            rotate
+        } of ARM_OFFSETS[angle]) {
+            const armCanvas = document.createElement('canvas');
+            armCanvas.width = ARM_SIZE;
+            armCanvas.height = ARM_SIZE;
+
+            const armContext = armCanvas.getContext('2d');
+
+            if (rotate) {
+                armContext.translate(ARM_SIZE, 0);
+                armContext.scale(-1, 1);
+            }
+
+            armContext.drawImage(
+                this.game.images['/character/arms.png'],
+                0,
+                armIndex * ARM_SIZE,
+                ARM_SIZE,
+                ARM_SIZE,
+                0,
+                0,
+                ARM_SIZE,
+                ARM_SIZE
+            );
+
+            bodySpriteContext.drawImage(
+                armCanvas,
+                0,
+                0,
+                ARM_SIZE,
+                ARM_SIZE,
+                offsetX,
+                offsetY,
+                ARM_SIZE,
+                ARM_SIZE
+            );
+        }
+
         // skin tone
         bodySpriteContext.fillStyle = '#000';
         bodySpriteContext.globalCompositeOperation = 'source-atop';
         bodySpriteContext.globalAlpha = this.skinTone;
 
-        bodySpriteContext.fillRect(
-            0,
-            0,
-            BODY_WIDTH,
-            BODY_HEIGHT
-        );
+        bodySpriteContext.fillRect(0, 0, BODY_WIDTH, BODY_HEIGHT);
 
         bodySpriteContext.globalCompositeOperation = 'source-over';
         bodySpriteContext.globalAlpha = 1;
@@ -301,14 +364,10 @@ class Character {
             baseSpriteContext.drawImage(
                 bodySprite,
                 BODY_ANGLE_OFFSETS[angle].x,
-                BODY_ANGLE_OFFSETS[angle].y,
+                BODY_ANGLE_OFFSETS[angle].y
             );
 
-            baseSpriteContext.drawImage(
-                headSprite,
-                0,
-                0
-            );
+            baseSpriteContext.drawImage(headSprite, 0, 0);
 
             this.sprites.idle.push(baseSprite);
 
@@ -337,6 +396,8 @@ class Character {
             this.sprites.idle.push(baseSprite);
         }
     }
+
+    generateArmSprites() {}
 
     move(x, y) {
         const deltaX = this.x - x;
