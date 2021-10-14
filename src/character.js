@@ -63,30 +63,141 @@ const WALK_ANGLE_DELTAS = {
 };
 
 // x offsets for post-rotated character sprites
-const ROTATED_OFFSETS = [-16, -17, -13];
+const ROTATED_OFFSETS = [-16, -10, -13];
 
-// { angle: [ { index: armIndex, x, y, rotate: false } ] }
-// TODO make sub-arrays for animations
+// { bodyIndex: { angle: [ { index: armIndex, x, y, rotate: false } ] }
 const ARM_OFFSETS = {
-    0: [
-        { index: 0, x: 12, y: 6 },
-        { index: 2, x: -4, y: 5 }
-    ],
-    1: [{ index: 1, x: 5, y: 6 }],
-    2: [
-        { index: 4, x: 9, y: 3 },
-        //{ index: 5, x: -2, y: 5 } right
-        { index: 6, x: 0, y: 5 }
-    ],
-    3: [
-        { index: 6, x: 1, y: 3 },
-        { index: 6, x: 18, y: 3, rotate: true }
-    ],
-    4: [
-        { index: 6, x: -2, y: 4 },
-        { index: 6, x: 17, y: 4, rotate: true }
-    ]
+    0: { // idle
+        0: [
+            { index: 0, x: 12, y: 6 },
+            { index: 2, x: -4, y: 5 }
+        ],
+        1: [{ index: 1, x: 5, y: 6 }],
+        2: [
+            { index: 4, x: 9, y: 3 },
+            //{ index: 5, x: -2, y: 5 } right
+            { index: 6, x: 0, y: 5 }
+        ],
+        3: [
+            { index: 6, x: 1, y: 3 },
+            { index: 6, x: 18, y: 3, rotate: true }
+        ],
+        4: [
+            { index: 3, x: -2, y: 4 },
+            { index: 3, x: 17, y: 4, rotate: true }
+        ]
+    },
+
+    1: { // sit
+        0: [
+            { index: 0, x: 12, y: 6 },
+            { index: 2, x: -4, y: 5 }
+        ],
+        1: [{ index: 1, x: 5, y: 6 }],
+        2: [
+            { index: 4, x: 9, y: 3 },
+            //{ index: 5, x: -2, y: 5 } right
+            { index: 6, x: 0, y: 5 }
+        ],
+        3: [
+            { index: 6, x: 1, y: 3 },
+            { index: 6, x: 18, y: 3, rotate: true }
+        ],
+        4: [
+            { index: 3, x: -2, y: 4 },
+            { index: 3, x: 17, y: 4, rotate: true }
+        ]
+    },
+
+    2: { // walk0
+        0: [
+            { index: 0, x: 12, y: 6 },
+            { index: 2, x: -4, y: 5 }
+        ],
+        1: [
+            { index: 0, x: 6, y: 7 }
+        ],
+        2: [
+            { index: 6, x: 0, y: 4 },
+            { index: 4, x: 10, y: 4 }
+        ],
+        3: [
+            { index: 7, x: 1, y: 2 },
+            { index: 10, x: 16, y: 2 }
+        ],
+        4: [
+            { index: 15, x: -1, y: 4 },
+            { index: 3, x: 16, y: 4, rotate: true },
+        ]
+
+    },
+    3: { // walk1
+        0: [
+            { index: 0, x: 12, y: 6 },
+            { index: 2, x: -4, y: 5 }
+        ],
+        1: [
+            { index: 0, x: 6, y: 7 }
+        ],
+        2: [
+            { index: 6, x: 0, y: 4 },
+            { index: 4, x: 10, y: 4 }
+        ],
+        3: [
+            { index: 7, x: 1, y: 2 },
+            { index: 10, x: 16, y: 2 }
+        ],
+        4: [
+            { index: 15, x: -1, y: 4 },
+            { index: 3, x: 16, y: 4, rotate: true },
+        ]
+    },
+    4: { // walk2
+        0: [
+            { index: 3, x: -4, y: 3 },
+            { index: 1, x: 12, y: 7 }
+        ],
+        1: [
+            { index: 1, x: 6, y: 8 }
+        ],
+        2: [
+            { index: 5, x: 0, y: 4 }
+        ],
+        3: [
+            { index: 7, x: 18, y: 1, rotate: true },
+            { index: 10, x: 3, y: 2, rotate: true }
+        ],
+        4: [
+            { index: 15, x: 16, y: 4, rotate: true },
+            { index: 3, x: -1, y: 4 } // could be x: -2
+        ]
+    },
+    5: { // walk3
+        0: [
+            { index: 3, x: -4, y: 3 },
+            { index: 1, x: 12, y: 7 }
+        ],
+        1: [
+            { index: 1, x: 6, y: 8 }
+        ],
+        2: [
+            { index: 5, x: 0, y: 4 }
+        ],
+        3: [
+            { index: 7, x: 18, y: 1, rotate: true },
+            { index: 10, x: 3, y: 2, rotate: true }
+        ],
+        4: [
+            { index: 15, x: 16, y: 4, rotate: true },
+            { index: 3, x: -1, y: 4 } // could be x: -2
+        ]
+    }
 };
+
+/*
+const ARM_OFFSETS_2 = {
+    0
+};*/
 
 const BODY_INDEX_SPRITE_NAMES = {
     0: 'idle',
@@ -159,6 +270,8 @@ class Character {
         this.toY = -1;
 
         this.walkSpeed = 5;
+
+        this.idleStepTimeout = null;
     }
 
     generateHeadSprite(angle) {
@@ -314,7 +427,7 @@ class Character {
             x: offsetX,
             y: offsetY,
             rotate
-        } of ARM_OFFSETS[angle]) {
+        } of ARM_OFFSETS[index][angle]) {
             const { canvas: armCanvas, context: armContext } = createCanvas(
                 ARM_SIZE,
                 ARM_SIZE
@@ -371,7 +484,7 @@ class Character {
                 const {
                     canvas: baseSprite,
                     context: baseContext
-                } = createCanvas(56, 116);
+                } = createCanvas(62, 116);
 
                 const bodySprite = this.generateBodySprite(angle, bodyIndex);
                 const headSprite = this.generateHeadSprite(angle);
@@ -391,7 +504,7 @@ class Character {
                 const {
                     canvas: baseSprite,
                     context: baseContext
-                } = createCanvas(56, 116);
+                } = createCanvas(62, 116);
 
                 baseContext.translate(baseSprite.width, 0);
                 baseContext.scale(-1, 1);
@@ -403,6 +516,10 @@ class Character {
                 );
 
                 this.sprites[spriteName].push(baseSprite);
+
+                if (angle === 6) {
+                    document.body.append(baseSprite);
+                }
             }
         }
 
@@ -421,10 +538,14 @@ class Character {
         this.toX = -1;
         this.toY = -1;
 
-        this.walkIndex = -1;
+        //this.walkIndex = -1;
     }
 
     move(x, y) {
+        if (this.idleStepTimeout) {
+            clearTimeout(this.idleStepTimeout);
+        }
+
         if (this.toX !== -1 || this.toY !== -1) {
             this.resetDrawOffset();
         }
@@ -444,17 +565,23 @@ class Character {
 
         const diffX = this.toDrawX - this.drawX;
         const diffY = this.toDrawY - this.drawY;
-
         const distance = Math.sqrt(diffX * diffX + diffY * diffY);
+        const isDiagonal = Math.abs(deltaX) === 1 && Math.abs(deltaY) === 1;
+        const stepTime = isDiagonal ? 750 : 500;
 
-        const stepTime =
-            Math.abs(deltaX) === 1 && Math.abs(deltaY) === 1 ? 750 : 500;
+        this.idleStepTimeout = setTimeout(() => {
+            this.walkIndex = -1;
+        }, stepTime + this.game.frameMs);
 
         const totalFrames = stepTime / this.game.frameMs;
 
         this.walkIndex = 0; // which walk sprite index we're at
-        this.walkFrameCount = 0;
-        this.totalWalkFrames = Math.floor(totalFrames / 4); // how many frames until we switch sprites
+
+        this.walkFrameCount = 0; // 0 - this.totalWalkFrames
+
+        // how many frames until we switch sprites
+        this.totalWalkFrames = Math.ceil(totalFrames / 4);
+
         this.walkSpeed = distance / totalFrames; // px per frame
 
         this.startWalkTime = Date.now();
@@ -520,7 +647,7 @@ class Character {
             if (Math.floor(distance) === 0) {
                 this.resetDrawOffset();
 
-                console.log('done ', Date.now() - this.startWalkTime);
+                //console.log('done ', Date.now() - this.startWalkTime);
                 return this.update();
             }
         }

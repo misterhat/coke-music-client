@@ -370,8 +370,8 @@ class Room {
         if (this.isTileSelected()) {
             context.drawImage(
                 this.tileSelectImage,
-                this.tileSelectX,
-                this.tileSelectY
+                this.tileSelectX - 2,
+                this.tileSelectY - 2
             );
         }
 
