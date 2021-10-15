@@ -134,11 +134,14 @@ h6 {
 }
 
 .coke-music-login {
-    /*left: 236px;*/
-    /*top: 200px;*/
     left: 418px;
-    top: 0;
     top: 224px;
+    width: 328px;
+}
+
+.coke-music-register {
+    left: 418px;
+    top: 160px;
     width: 328px;
 }
 

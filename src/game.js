@@ -1,6 +1,8 @@
 const Entry = require('./entry');
 const Login = require('./login');
+const Register = require('./register');
 const Room = require('./room');
+const rooms = require('coke-music-data/rooms.json');
 const { EventEmitter } = require('events');
 
 const WIDTH = 800;
@@ -8,12 +10,6 @@ const HEIGHT = 600;
 
 const PRELOAD_IMAGES = [
     '/entry.png',
-
-    // TODO we can automatically populate this based on room.json data
-    '/rooms/studio_a.png',
-    '/rooms/studio_b.png',
-    '/rooms/studio_c.png',
-    '/rooms/studio_d.png',
 
     '/tiles/selected.png',
 
@@ -35,6 +31,8 @@ const PRELOAD_IMAGES = [
 
     '/message_name.png'
 ];
+
+PRELOAD_IMAGES.push(...Object.keys(rooms).map((name) => `/rooms/${name}.png`));
 
 function getMousePosition(canvas, e) {
     const boundingRect = canvas.getBoundingClientRect();
@@ -77,8 +75,9 @@ class Game extends EventEmitter {
 
         this.states = {
             login: new Login(this),
-            room: new Room(this),
-            entry: new Entry(this)
+            register: new Register(this),
+            entry: new Entry(this),
+            room: new Room(this)
         };
 
         this.socket = null;
@@ -104,6 +103,10 @@ class Game extends EventEmitter {
 
         window.addEventListener('mouseup', () => {
             this.mouseDown = false;
+        });
+
+        this.container.addEventListener('contextmenu', (event) => {
+            event.preventDefault();
         });
     }
 

@@ -32,6 +32,7 @@
                             id="coke-music-login-username"
                             type="text"
                             placeholder="Enter username..."
+                            maxlength="20"
                         />
                         <input
                             class="coke-music-input"
@@ -50,8 +51,79 @@
 
                     <p>
                         Don't have an account?
-                        <button class="coke-music-link">
+                        <button
+                            id="coke-music-login-register-button"
+                            class="coke-music-link"
+                        >
                             Click here to register.
+                        </button>
+                    </p>
+                </div>
+            </div>
+
+            <!-- registration panel -->
+            <div
+                id="coke-music-register"
+                class="coke-music-panel coke-music-register"
+            >
+                <h2>Create Account</h2>
+
+                <div class="coke-music-paper">
+                    <p
+                        class="coke-music-error"
+                        id="coke-music-register-error"
+                    ></p>
+
+                    <label>
+                        <strong>Username:</strong><br />
+                        <input
+                            class="coke-music-input"
+                            id="coke-music-register-username"
+                            type="text"
+                            placeholder="Enter username..."
+                            maxlength="20"
+                        />
+                    </label>
+                    <br />
+                    <label>
+                        <strong>E-Mail:</strong><br />
+                        <input
+                            class="coke-music-input"
+                            id="coke-music-register-email"
+                            type="email"
+                            placeholder="Enter e-mail address..."
+                        />
+                    </label>
+                    <br />
+                    <label>
+                        <strong>Password:</strong><br />
+                        <input
+                            class="coke-music-input"
+                            id="coke-music-register-password"
+                            type="password"
+                            placeholder="Enter password..."
+                        />
+                        <input
+                            class="coke-music-input"
+                            id="coke-music-register-password-confirm"
+                            type="password"
+                            placeholder="Confirm password..."
+                        />
+                    </label>
+                    <br />
+                    <button
+                        id="coke-music-register-register-button"
+                        class="coke-music-button"
+                    >
+                        Register
+                    </button>
+                    <p>
+                        Already have an account?
+                        <button
+                            id="coke-music-register-login-button"
+                            class="coke-music-link"
+                        >
+                            Click here to log in.
                         </button>
                     </p>
                 </div>

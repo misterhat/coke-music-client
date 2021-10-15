@@ -1,135 +1,124 @@
-class Login {
+const AccountPanel = require('./account-panel');
+
+class Login extends AccountPanel {
     constructor(game) {
-        this.game = game;
-
-        this.panel = document.getElementById('coke-music-login');
-
-        this.loginError = document.getElementById('coke-music-login-error');
-
-        this.usernameInput = document.getElementById(
-            'coke-music-login-username'
-        );
-
-        this.passwordInput = document.getElementById(
-            'coke-music-login-password'
-        );
+        super(game, 'login');
 
         this.loginButton = document.getElementById('coke-music-login-button');
+
+        this.registerButton = document.getElementById(
+            'coke-music-login-register-button'
+        );
+
         this.statusIngame = document.getElementById('coke-music-status-ingame');
+
+        this.boundOnMessage = this.onMessage.bind(this);
+        this.boundOnLoginClick = this.onLoginClick.bind(this);
+        this.boundOnRegisterClick = this.onRegisterClick.bind(this);
+        this.boundOnUsernameEnter = this.onUsernameEnter.bind(this);
+        this.boundOnPasswordEnter = this.onPasswordEnter.bind(this);
     }
 
-    showError(message) {
-        this.loginError.style.display = 'block';
+    onMessage(message) {
+        if (message.type !== 'login-response') {
+            return;
+        }
+
         this.loginButton.disabled = false;
-        this.loginError.textContent = message;
+
+        if (!message.success) {
+            this.showError(message.message);
+            return;
+        }
+
+        this.game.characterID = message.id;
+
+        this.game.changeState('entry');
     }
 
-    addEventListeners() {
-        this.onMessage = (message) => {
-            if (message.type === 'login-response') {
-                if (!message.success) {
-                    this.showError(message.error);
-                    return;
-                }
+    async onLoginClick() {
+        this.loginButton.disabled = true;
 
-                this.game.characterID = message.id;
+        const username = this.usernameInput.value.trim();
+        const password = this.passwordInput.value.trim();
 
-                this.game.changeState('entry');
-            }
-        };
+        if (!username.length || !password.length) {
+            this.showError('Please enter a username and password.');
+            return;
+        }
 
-        this.game.on('message', this.onMessage);
+        try {
+            await this.game.connect();
+        } catch (e) {
+            this.showError('Unable to connect.');
+            this.loginButton.disabled = false;
+            return;
+        }
 
-        this.onLoginClick = async () => {
-            this.loginButton.disabled = true;
+        this.game.write({ type: 'login', username, password });
+    }
 
-            const username = this.usernameInput.value.trim();
-            const password = this.passwordInput.value.trim();
+    onUsernameEnter(event) {
+        if (event.key === 'Enter') {
+            this.passwordInput.focus();
+        }
+    }
 
-            if (!username.length || !password.length) {
-                this.showError('Please enter a username and password.');
-                return;
-            }
+    onPasswordEnter(event) {
+        if (event.key === 'Enter') {
+            this.onLoginClick();
+        }
+    }
 
-            try {
-                await this.game.connect();
-            } catch (e) {
-                this.showError('Unable to connect.');
-                return;
-            }
-
-            this.game.write({ type: 'login', username, password });
-        };
-
-        this.loginButton.addEventListener('click', this.onLoginClick);
-
-        this.onUsernameEnter = (event) => {
-            if (event.key === 'Enter') {
-                this.passwordInput.focus();
-            }
-        };
-
-        this.usernameInput.addEventListener('keypress', this.onUsernameEnter);
-
-        this.onPasswordEnter = (event) => {
-            if (event.key === 'Enter') {
-                this.onLoginClick();
-            }
-        };
-
-        this.passwordInput.addEventListener('keypress', this.onPasswordEnter);
+    onRegisterClick() {
+        this.game.changeState('register');
     }
 
     init() {
-        this.addEventListeners();
+        super.init();
 
-        this.statusIngame.style.display = 'none';
+        this.game.on('message', this.boundOnMessage);
 
-        this.panel.style.display = 'block';
-        this.loginError.style.display = 'none';
+        this.loginButton.addEventListener('click', this.boundOnLoginClick);
+
+        this.usernameInput.addEventListener(
+            'keypress',
+            this.boundOnUsernameEnter
+        );
+
+        this.passwordInput.addEventListener(
+            'keypress',
+            this.boundOnPasswordEnter
+        );
+
+        this.registerButton.addEventListener(
+            'click',
+            this.boundOnRegisterClick
+        );
+
         this.loginButton.disabled = false;
-
-        this.backgroundImage = this.game.images['/entry.png'];
-
-        this.backgroundOffsetX = Math.floor(
-            this.game.canvas.width / 2 - this.backgroundImage.width / 2
-        );
-
-        this.backgroundOffsetY = Math.floor(
-            this.game.canvas.height / 2 - this.backgroundImage.height / 2
-        );
     }
 
     update() {}
 
-    draw() {
-        const { context } = this.game;
-
-        context.drawImage(
-            this.backgroundImage,
-            this.backgroundOffsetX,
-            this.backgroundOffsetY
-        );
-    }
-
     destroy() {
-        this.game.removeListener('message', this.onMessage);
+        super.destroy();
 
-        this.loginButton.removeEventListener('click', this.onLoginClick);
+        this.game.removeListener('message', this.boundOnMessage);
+
+        this.loginButton.removeEventListener('click', this.boundOnLoginClick);
 
         this.usernameInput.removeEventListener(
             'keypress',
-            this.onUsernameEnter
+            this.boundOnUsernameEnter
         );
 
         this.passwordInput.value = '';
 
         this.passwordInput.removeEventListener(
             'keypress',
-            this.onPasswordEnter
+            this.boundOnPasswordEnter
         );
-
-        this.panel.style.display = 'none';
     }
 }
 

@@ -1,8 +1,14 @@
 const Character = require('./character');
-const { cssColor } = require('@swiftcarrot/color-fns');
-const { createCanvas, cutPolygon, shadeImage, colourizeImage } = require('./draw');
+const rooms = require('coke-music-data/rooms.json');
 
-const rooms = require('./rooms.json');
+const {
+    createCanvas,
+    cutPolygon,
+    shadeImage,
+    colourizeImage
+} = require('./draw');
+
+const { cssColor } = require('@swiftcarrot/color-fns');
 
 const TILE_WIDTH = 70;
 const TILE_HEIGHT = 36;
@@ -187,9 +193,10 @@ class Room {
         this.chatMessageList.scrollTop = this.messageLength * 25;
 
         let { x } = this.isoToCoordinate(isoX, isoY);
-        console.log(messageLi.offsetWidth);
+
         x -= Math.floor(messageLi.offsetWidth / 2);
         x += TILE_WIDTH / 2;
+
         messageLi.style.left = `${x}px`;
     }
 
