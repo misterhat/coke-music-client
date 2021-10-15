@@ -11,7 +11,7 @@
             class="coke-music-container"
             tabindex="0"
         >
-            <!-- loading screen (removed after images and json are preloaded) -->
+            <!-- loading (removed after images and json are preloaded) -->
             <div id="coke-music-loading" class="coke-music-loading">
                 Loading...
             </div>
@@ -136,7 +136,7 @@
             >
                 <button
                     id="coke-music-navigation-close"
-                    class="coke-music-panel-close"
+                    class="coke-music-close coke-music-panel-close"
                 ></button>
 
                 <h2>Coke Studios Navigation</h2>
@@ -154,6 +154,7 @@
                     <button class="coke-music-button">
                         Show Active Studios
                     </button>
+
                     <button class="coke-music-button">Show My Studios</button>
 
                     <div
@@ -243,6 +244,38 @@
                             ></button>
                         </li>
                     </ul>
+                </div>
+            </div>
+
+            <!-- inventory -->
+            <div id="coke-music-inventory" class="coke-music-inventory">
+                <button
+                    id="coke-music-inventory-close"
+                    class="coke-music-close coke-music-inventory-close"
+                ></button>
+
+                <h3 class="coke-music-inventory-header">Your Items</h3>
+
+                <div class="coke-music-inventory-items">
+                    <div class="coke-music-inventory-item"></div>
+                    <div class="coke-music-inventory-item"></div>
+                    <div class="coke-music-inventory-item"></div>
+                    <div class="coke-music-inventory-item"></div>
+                    <div class="coke-music-inventory-item"></div>
+                    <div class="coke-music-inventory-item"></div>
+                    <div class="coke-music-inventory-item"></div>
+
+                    <div style="clear: both"></div>
+                </div>
+
+                <div class="coke-music-pages coke-music-inventory-pages">
+                    <button
+                        class="coke-music-page coke-music-page-previous"
+                    ></button>
+                    Page 1 of 2
+                    <button
+                        class="coke-music-page coke-music-page-next"
+                    ></button>
                 </div>
             </div>
 

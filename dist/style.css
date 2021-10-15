@@ -135,19 +135,6 @@ h6 {
     width: 292px;
 }
 
-.coke-music-panel-close {
-    background-color: transparent;
-    background-image: url(/assets/panel_close.png);
-    border: 0;
-    box-sizing: border-box;
-    height: 19px;
-    margin: 0;
-    padding: 0;
-    position: absolute;
-    right: 4px;
-    top: 4px;
-    width: 19px;
-}
 
 .coke-music-login {
     left: 418px;
@@ -201,11 +188,12 @@ h6 {
 }
 
 .coke-music-action {
-    width: 20px;
-    height: 22px;
-    background-image: url(/assets/actions.png);
-    border: 0;
     background-color: transparent;
+    background-image: url(/assets/actions.png);
+    background-repeat: no-repeat;
+    border: 0;
+    height: 22px;
+    width: 20px;
 }
 
 .coke-music-action:hover {
@@ -346,4 +334,96 @@ h6 {
     max-width: 562px;
     padding-left: 6px;
     padding-right: 16px;
+}
+
+.coke-music-inventory {
+    width: 238px;
+    height: 336px;
+    position: absolute;
+    background-image: url(/assets/inventory.png);
+    top: 100px;
+    left: 100px;
+}
+
+.coke-music-inventory-header {
+    color: #000;
+    position: absolute;
+    text-align: center;
+    text-shadow: none;
+    top: 50px;
+    width: 238px;
+    margin: 0;
+}
+
+.coke-music-inventory-items {
+    /*background-color: #f0f;*/
+    height: 180px;
+    left: 30px;
+    position: absolute;
+    top: 112px;
+    width: 185px;
+}
+
+.coke-music-inventory-item {
+    background-color: #f00;
+    float: left;
+    height: 32px;
+    margin-bottom: 5px;
+    margin-right: 5px;
+    width: 32px;
+}
+
+.coke-music-close {
+    background-color: transparent;
+    border: 0;
+    box-sizing: border-box;
+    height: 19px;
+    margin: 0;
+    padding: 0;
+    position: absolute;
+}
+
+.coke-music-inventory-close {
+    background-image: url(/assets/inventory_close.png);
+}
+
+.coke-music-panel-close {
+    background-image: url(/assets/panel_close.png);
+    right: 4px;
+    top: 4px;
+    width: 19px;
+}
+
+.coke-music-pages {
+    position: absolute;
+    color: #fff;
+    font-size: 12px;
+}
+
+.coke-music-inventory-pages {
+    width: 100%;
+    bottom: 18px;
+    text-align: center;
+}
+
+.coke-music-page {
+    background-color: transparent;
+    background-image: url(/assets/arrow.png);
+    width: 12px;
+    height: 11px;
+    background-repeat: no-repeat;
+    box-sizing: border-box;
+    border: 0;
+    padding: 0;
+    position: relative;
+    top: -4px;
+}
+
+.coke-music-page-previous {
+    margin-right: 4px;
+}
+
+.coke-music-page-next {
+    transform: scaleX(-1);
+    margin-left: 4px;
 }
