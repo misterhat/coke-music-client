@@ -516,10 +516,6 @@ class Character {
                 );
 
                 this.sprites[spriteName].push(baseSprite);
-
-                if (angle === 6) {
-                    document.body.append(baseSprite);
-                }
             }
         }
 

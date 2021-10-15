@@ -73,7 +73,7 @@ body {
 
 .coke-music-button:hover {
     text-decoration: underline;
-    background-color: transparent;
+    background-color: #000;
 }
 
 .coke-music-container button:hover {
@@ -145,6 +145,8 @@ h6 {
     width: 328px;
 }
 
+/* bottom status bar */
+
 .coke-music-status {
     background: url(/assets/status.png) no-repeat;
     bottom: 0;
@@ -154,6 +156,71 @@ h6 {
     width: 758px;
     z-index: 2;
 }
+
+.coke-music-chat-input {
+    border: 0;
+    background-image: url(/assets/chat_input.png);
+    background-repeat: no-repeat;
+    width: 398px;
+    position: absolute;
+    top: 20px;
+    left: 72px;
+    padding-left: 6px;
+    padding-right: 6px;
+    font-weight: bold;
+}
+
+.coke-music-actions {
+    position: absolute;
+    margin: 0;
+    padding: 0;
+    top: 23px;
+    left: 480px;
+}
+
+.coke-music-actions li {
+    margin: 0;
+    padding: 0;
+    display: inline-block;
+}
+
+.coke-music-action {
+    width: 20px;
+    height: 22px;
+    background-image: url(/assets/actions.png);
+    border: 0;
+    background-color: transparent;
+}
+
+.coke-music-action:hover {
+    background-position-y: 22px;
+}
+
+.coke-music-action-messages {
+    background-position-x: -21px;
+}
+
+.coke-music-action-decibels {
+    background-position-x: -42px;
+}
+
+.coke-music-action-inventory {
+    background-position-x: -63px;
+}
+
+.coke-music-action-catalog {
+    background-position-x: -84px;
+}
+
+.coke-music-action-music {
+    background-position-x: -105px;
+}
+
+.coke-music-action-help {
+    background-position-x: -126px;
+}
+
+/* overlapping shadow */
 
 .coke-music-shadow {
     pointer-events: none;
@@ -218,19 +285,6 @@ h6 {
 
 .coke-music-table tr {
     border-bottom: 1px dotted #000;
-}
-
-.coke-music-chat-input {
-    border: 0;
-    background-image: url(/assets/chat_input.png);
-    background-repeat: no-repeat;
-    width: 398px;
-    position: absolute;
-    top: 20px;
-    left: 88px;
-    padding-left: 6px;
-    padding-right: 6px;
-    font-weight: bold;
 }
 
 .coke-music-chat-messages {
