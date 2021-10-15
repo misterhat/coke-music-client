@@ -13,8 +13,6 @@ const PRELOAD_IMAGES = [
 
     '/tiles/selected.png',
 
-    '/character_test.png',
-
     '/walls/wall_a_left.png',
     '/walls/wall_a_right.png',
 
@@ -28,6 +26,7 @@ const PRELOAD_IMAGES = [
     '/character/hats.png',
     '/character/bodies.png',
     '/character/arms.png',
+    '/character/shadow.png',
 
     '/message_name.png'
 ];
@@ -90,6 +89,17 @@ class Game extends EventEmitter {
     }
 
     addEventListeners() {
+        this.on('message', (message) => {
+            switch (message.type) {
+                case 'join-room':
+                    this.changeState('room', {
+                        name: message.name,
+                        characters: message.characters
+                    });
+                    break;
+            }
+        });
+
         this.container.addEventListener('mousemove', (event) => {
             const { x, y } = getMousePosition(this.canvas, event);
 
@@ -98,6 +108,7 @@ class Game extends EventEmitter {
         });
 
         this.container.addEventListener('mousedown', (event) => {
+            // TODO check left click
             this.mouseDown = true;
         });
 

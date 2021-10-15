@@ -1,19 +1,11 @@
+const ActionBar = require('./action-bar');
 const Character = require('./character');
+const Chat = require('./chat');
 const rooms = require('coke-music-data/rooms.json');
-
-const {
-    createCanvas,
-    cutPolygon,
-    shadeImage,
-    colourizeImage
-} = require('./draw');
-
-const { cssColor } = require('@swiftcarrot/color-fns');
+const { cutPolygon, shadeImage, } = require('./draw');
 
 const TILE_WIDTH = 70;
 const TILE_HEIGHT = 36;
-
-const MAX_MESSAGES = 6;
 
 class Room {
     constructor(game) {
@@ -32,17 +24,61 @@ class Room {
 
         this.statusIngame = document.getElementById('coke-music-status-ingame');
 
-        this.chatInput = document.getElementById('coke-music-chat-input');
-
-        this.chatMessageList = document.getElementById(
-            'coke-music-chat-messages'
-        );
-
-        this.messageLength = 0;
+        this.chat = new Chat(this.game, this);
+        this.actionBar = new ActionBar(this.game);
 
         this.boundOnMessage = this.onMessage.bind(this);
-        this.boundOnChat = this.onChat.bind(this);
         this.boundOnTab = this.onTab.bind(this);
+    }
+
+    onMessage(message) {
+        switch (message.type) {
+            case 'add-character': {
+                const character = new Character(this.game, this, {});
+                character.username = message.username;
+                character.x = message.x;
+                character.y = message.y;
+                character.id = message.id;
+                this.characters.set(character.id, character);
+                break;
+            }
+            case 'remove-character': {
+                this.characters.delete(message.id);
+                break;
+            }
+            case 'move-character': {
+                const character = this.characters.get(message.id);
+
+                if (!character) {
+                    break;
+                }
+
+                character.move(message.x, message.y);
+                break;
+            }
+            case 'chat': {
+                const character = this.characters.get(message.id);
+
+                if (!character) {
+                    break;
+                }
+
+                this.chat.addChatMessage({
+                    username: character.username,
+                    message: message.message,
+                    x: message.x,
+                    y: message.y
+                });
+                break;
+            }
+        }
+    }
+
+    onTab(event) {
+        if (event.key === 'Tab') {
+            event.preventDefault();
+            this.chat.input.focus();
+        }
     }
 
     // convert cartesian coordinates to isometric grid position
@@ -72,6 +108,11 @@ class Room {
             this.backgroundOffsetY;
 
         return { x, y };
+    }
+
+    // are we selecting a tile with the mouse?
+    isTileSelected() {
+        return this.tileSelectX !== -1 && this.tileSelectY !== -1;
     }
 
     drawTiles() {
@@ -150,122 +191,15 @@ class Room {
 
     drawRoom() {
         this.roomContext.drawImage(this.backgroundImage, 0, 0);
+
         this.drawTiles();
         this.drawWalls();
     }
 
-    addChatMessage({ username, message, x: isoX, y: isoY }) {
-        this.messageLength += 1;
-
-        const messageLi = document.createElement('li');
-
-        const { canvas: nameCanvas, context: nameContext } = createCanvas(
-            this.nameImage.width,
-            this.nameImage.height
-        );
-
-        nameContext.drawImage(this.nameImage, 0, 0);
-
-        colourizeImage(nameCanvas, cssColor('#ff0000'));
-
-        const nameSpan = document.createElement('span');
-
-        nameSpan.className = 'coke-music-chat-name';
-        nameSpan.style.backgroundImage = `url(${nameCanvas.toDataURL()})`;
-        nameSpan.textContent = username;
-
-        messageLi.appendChild(nameSpan);
-
-        const messageSpan = document.createElement('span');
-
-        messageSpan.className = 'coke-music-chat-message';
-        messageSpan.textContent = message;
-
-        messageLi.appendChild(messageSpan);
-
-        this.chatMessageList.style.top = `${
-            Math.max(0, MAX_MESSAGES - this.messageLength) * 25 + 44
-        }px`;
-
-        this.chatMessageList.appendChild(messageLi);
-        this.chatMessageList.appendChild(document.createElement('br'));
-
-        this.chatMessageList.scrollTop = this.messageLength * 25;
-
-        let { x } = this.isoToCoordinate(isoX, isoY);
-
-        x -= Math.floor(messageLi.offsetWidth / 2);
-        x += TILE_WIDTH / 2;
-
-        messageLi.style.left = `${x}px`;
-    }
-
-    onMessage(message) {
-        switch (message.type) {
-            case 'add-character': {
-                const character = new Character(this.game, this, {});
-                character.username = message.username;
-                character.x = message.x;
-                character.y = message.y;
-                character.id = message.id;
-                this.characters.set(character.id, character);
-                break;
-            }
-            case 'remove-character': {
-                this.characters.delete(message.id);
-                break;
-            }
-            case 'move-character': {
-                const character = this.characters.get(message.id);
-
-                if (!character) {
-                    break;
-                }
-
-                character.move(message.x, message.y);
-                break;
-            }
-            case 'chat': {
-                const character = this.characters.get(message.id);
-
-                if (!character) {
-                    break;
-                }
-
-                this.addChatMessage({
-                    username: character.username,
-                    message: message.message,
-                    x: message.x,
-                    y: message.y
-                });
-                break;
-            }
-        }
-    }
-
-    onChat(event) {
-        if (event.key === 'Enter') {
-            const message = this.chatInput.value.trim();
-
-            this.chatInput.value = '';
-
-            if (!message.length) {
-                return;
-            }
-
-            this.game.write({ type: 'chat', message });
-        }
-    }
-
-    onTab(event) {
-        if (event.key === 'Tab') {
-            event.preventDefault();
-            this.chatInput.focus();
-        }
-    }
 
     init({ name, characters, wallType, tileType }) {
-        this.statusIngame.style.display = 'block';
+        this.chat.init();
+        this.actionBar.init();
 
         this.game.mouseDown = false;
 
@@ -278,9 +212,6 @@ class Room {
 
         // the base background image without any custom walls or tiles applied
         this.backgroundImage = this.game.images[`/rooms/${name}.png`];
-
-        // used for chat usernames
-        this.nameImage = this.game.images['/message_name.png'];
 
         // a buffered image of the background with walls and tiles applied
         this.roomCanvas = document.createElement('canvas');
@@ -309,8 +240,6 @@ class Room {
         this.tileSelectImage = this.game.images['/tiles/selected.png'];
 
         this.game.on('message', this.boundOnMessage);
-
-        this.chatInput.addEventListener('keypress', this.boundOnChat);
         window.addEventListener('keypress', this.boundOnTab);
 
         for (const { username, id, x, y } of characters) {
@@ -325,16 +254,18 @@ class Room {
         }
 
         this.drawRoom();
-    }
 
-    // are we selecting a tile with the mouse?
-    isTileSelected() {
-        return this.tileSelectX !== -1 && this.tileSelectY !== -1;
+        this.statusIngame.style.display = 'block';
+
     }
 
     update() {
         for (const character of this.characters.values()) {
             character.update();
+        }
+
+        if (this.game.openPanel) {
+            return;
         }
 
         const { mouseX, mouseY } = this.game;
@@ -382,22 +313,21 @@ class Room {
             );
         }
 
+        // TODO depth sorting
+
+        const drawable = [];
+
         for (const character of this.characters.values()) {
             character.draw();
         }
     }
 
-    clearChatMessages() {
-        this.chatMessageList.innerHTML = '';
-    }
-
     destroy() {
-        this.clearChatMessages();
-
-        this.chatInput.removeEventListener('keypress', this.boundOnChat);
-        window.removeEventListener('keypress', this.boundOnTab);
+        this.chat.destroy();
+        this.actionBar.init();
 
         this.game.removeListener('message', this.boundOnMessage);
+        window.removeEventListener('keypress', this.boundOnTab);
     }
 }
 

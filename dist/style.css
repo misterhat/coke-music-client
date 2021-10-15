@@ -106,6 +106,8 @@ h6 {
     padding: 0;
 }
 
+/* panels */
+
 .coke-music-panel {
     background-color: #ad7a4b;
     background-image: url(/assets/background.png);
@@ -131,6 +133,20 @@ h6 {
     margin-right: auto;
     padding: 2px;
     width: 292px;
+}
+
+.coke-music-panel-close {
+    background-color: transparent;
+    background-image: url(/assets/panel_close.png);
+    border: 0;
+    box-sizing: border-box;
+    height: 19px;
+    margin: 0;
+    padding: 0;
+    position: absolute;
+    right: 4px;
+    top: 4px;
+    width: 19px;
 }
 
 .coke-music-login {

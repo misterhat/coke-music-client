@@ -67,7 +67,8 @@ const ROTATED_OFFSETS = [-16, -10, -13];
 
 // { bodyIndex: { angle: [ { index: armIndex, x, y, rotate: false } ] }
 const ARM_OFFSETS = {
-    0: { // idle
+    0: {
+        // idle
         0: [
             { index: 0, x: 12, y: 6 },
             { index: 2, x: -4, y: 5 }
@@ -88,7 +89,8 @@ const ARM_OFFSETS = {
         ]
     },
 
-    1: { // sit
+    1: {
+        // sit
         0: [
             { index: 0, x: 12, y: 6 },
             { index: 2, x: -4, y: 5 }
@@ -109,14 +111,13 @@ const ARM_OFFSETS = {
         ]
     },
 
-    2: { // walk0
+    2: {
+        // walk0
         0: [
             { index: 0, x: 12, y: 6 },
             { index: 2, x: -4, y: 5 }
         ],
-        1: [
-            { index: 0, x: 6, y: 7 }
-        ],
+        1: [{ index: 0, x: 6, y: 7 }],
         2: [
             { index: 6, x: 0, y: 4 },
             { index: 4, x: 10, y: 4 }
@@ -127,18 +128,16 @@ const ARM_OFFSETS = {
         ],
         4: [
             { index: 15, x: -1, y: 4 },
-            { index: 3, x: 16, y: 4, rotate: true },
+            { index: 3, x: 16, y: 4, rotate: true }
         ]
-
     },
-    3: { // walk1
+    3: {
+        // walk1
         0: [
             { index: 0, x: 12, y: 6 },
             { index: 2, x: -4, y: 5 }
         ],
-        1: [
-            { index: 0, x: 6, y: 7 }
-        ],
+        1: [{ index: 0, x: 6, y: 7 }],
         2: [
             { index: 6, x: 0, y: 4 },
             { index: 4, x: 10, y: 4 }
@@ -149,20 +148,17 @@ const ARM_OFFSETS = {
         ],
         4: [
             { index: 15, x: -1, y: 4 },
-            { index: 3, x: 16, y: 4, rotate: true },
+            { index: 3, x: 16, y: 4, rotate: true }
         ]
     },
-    4: { // walk2
+    4: {
+        // walk2
         0: [
             { index: 3, x: -4, y: 3 },
             { index: 1, x: 12, y: 7 }
         ],
-        1: [
-            { index: 1, x: 6, y: 8 }
-        ],
-        2: [
-            { index: 5, x: 0, y: 4 }
-        ],
+        1: [{ index: 1, x: 6, y: 8 }],
+        2: [{ index: 5, x: 0, y: 4 }],
         3: [
             { index: 7, x: 18, y: 1, rotate: true },
             { index: 10, x: 3, y: 2, rotate: true }
@@ -172,17 +168,14 @@ const ARM_OFFSETS = {
             { index: 3, x: -1, y: 4 } // could be x: -2
         ]
     },
-    5: { // walk3
+    5: {
+        // walk3
         0: [
             { index: 3, x: -4, y: 3 },
             { index: 1, x: 12, y: 7 }
         ],
-        1: [
-            { index: 1, x: 6, y: 8 }
-        ],
-        2: [
-            { index: 5, x: 0, y: 4 }
-        ],
+        1: [{ index: 1, x: 6, y: 8 }],
+        2: [{ index: 5, x: 0, y: 4 }],
         3: [
             { index: 7, x: 18, y: 1, rotate: true },
             { index: 10, x: 3, y: 2, rotate: true }
@@ -194,11 +187,6 @@ const ARM_OFFSETS = {
     }
 };
 
-/*
-const ARM_OFFSETS_2 = {
-    0
-};*/
-
 const BODY_INDEX_SPRITE_NAMES = {
     0: 'idle',
     1: 'sit',
@@ -207,6 +195,8 @@ const BODY_INDEX_SPRITE_NAMES = {
     4: 'walk2',
     5: 'walk3'
 };
+
+const DRAW_OFFSET_Y = 88;
 
 // ne, e, se, s, n, [sw, w nw]
 
@@ -557,7 +547,7 @@ class Character {
         const { x: drawX, y: drawY } = this.room.isoToCoordinate(x, y);
 
         this.toDrawX = drawX;
-        this.toDrawY = drawY - 116 + 28;
+        this.toDrawY = drawY - DRAW_OFFSET_Y;
 
         const diffX = this.toDrawX - this.drawX;
         const diffY = this.toDrawY - this.drawY;
@@ -609,7 +599,7 @@ class Character {
 
         let { x: drawX, y: drawY } = this.room.isoToCoordinate(this.x, this.y);
 
-        drawY = drawY - 116 + 28;
+        drawY = drawY - DRAW_OFFSET_Y;
 
         let destX = drawX;
         let destY = drawY;
@@ -642,9 +632,9 @@ class Character {
 
             if (Math.floor(distance) === 0) {
                 this.resetDrawOffset();
+                this.update();
 
-                //console.log('done ', Date.now() - this.startWalkTime);
-                return this.update();
+                return;
             }
         }
 
@@ -654,6 +644,13 @@ class Character {
 
     draw() {
         const { context } = this.game;
+
+        context.drawImage(
+            this.game.images['/character/shadow.png'],
+            this.drawX,
+            this.drawY + DRAW_OFFSET_Y
+        );
+
         context.drawImage(this.image, this.drawX, this.drawY);
     }
 }
