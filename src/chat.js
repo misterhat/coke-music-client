@@ -7,9 +7,8 @@ const TILE_WIDTH = 70;
 const MAX_MESSAGES = 6;
 
 class Chat {
-    constructor(game, room) {
+    constructor(game) {
         this.game = game;
-        this.room = room;
 
         this.input = document.getElementById('coke-music-chat-input');
         this.messageList = document.getElementById('coke-music-chat-messages');
@@ -84,6 +83,8 @@ class Chat {
     }
 
     init() {
+        this.room = this.game.states.room;
+
         // used for chat usernames
         this.nameImage = this.game.images['/message_name.png'];
 

@@ -173,7 +173,12 @@
                         </table>
                     </div>
 
-                    <button class="coke-music-button">Create Studio</button>
+                    <button
+                        id="coke-music-create-studio"
+                        class="coke-music-button"
+                    >
+                        Create Studio
+                    </button>
                 </div>
             </div>
 
@@ -254,7 +259,12 @@
                     class="coke-music-close coke-music-inventory-close"
                 ></button>
 
-                <h3 class="coke-music-inventory-header">Your Items</h3>
+                <h3
+                    id="coke-music-inventory-header"
+                    class="coke-music-inventory-header"
+                >
+                    Your Items
+                </h3>
 
                 <div class="coke-music-inventory-items">
                     <div class="coke-music-inventory-item"></div>
@@ -270,12 +280,92 @@
 
                 <div class="coke-music-pages coke-music-inventory-pages">
                     <button
-                        class="coke-music-page coke-music-page-previous"
+                        class="coke-music-arrow coke-music-arrow-previous"
                     ></button>
                     Page 1 of 2
                     <button
-                        class="coke-music-page coke-music-page-next"
+                        class="coke-music-arrow coke-music-arrow-next"
                     ></button>
+                </div>
+            </div>
+
+            <!-- room info -->
+            <div id="coke-music-room-info" class="coke-music-room-info">
+                Studio: <span id="coke-music-studio-name"></span>
+                <button id="coke-music-toggle-settings" class="coke-music-link">
+                    [Settings]</button
+                ><br />
+                Owner: <span id="coke-music-studio-owner"></span>
+            </div>
+
+            <!-- studio settings -->
+            <div
+                id="coke-music-studio-settings"
+                class="coke-music-panel coke-music-studio-settings"
+            >
+                <h3>My Studio Settings</h3>
+
+                <div class="coke-music-paper">
+                    <div>
+                        <label>
+                            <strong>Name:</strong>
+                            <input
+                                class="coke-music-input"
+                                id="coke-music-studio-name"
+                                type="text"
+                                value="test1's studio"
+                            />
+                        </label>
+                    </div>
+                    <hr />
+                    <div>
+                        <label>
+                            <strong>Room:</strong>
+                            <div class="coke-music-room-types">
+                                <img
+                                    class="coke-music-room-type"
+                                    src="/assets/rooms/studio_a.png"
+                                />
+
+                                <img
+                                    class="coke-music-room-type"
+                                    src="/assets/rooms/studio_b.png"
+                                />
+                            </div>
+                        </label>
+                    </div>
+                    <hr />
+                    <div>
+                        <label>
+                            <strong>Floor:</strong>
+                            <div class="coke-music-room-types">
+                                <img
+                                    class="coke-music-room-type"
+                                    src="/assets/tiles/purple_carpet.png"
+                                />
+                                <img
+                                    class="coke-music-room-type"
+                                    src="/assets/tiles/brown_carpet.png"
+                                />
+                            </div>
+                        </label>
+                    </div>
+                    <hr />
+                    <div>
+                        <label>
+                            <strong>Wall:</strong>
+                            <div class="coke-music-room-types">
+                                <img
+                                    class="coke-music-wall-type"
+                                    src="/assets/walls/wall_a_left.png"
+                                />
+                                <img
+                                    class="coke-music-wall-type"
+                                    src="/assets/walls/wall_b_left.png"
+                                />
+                            </div>
+                        </label>
+                    </div>
                 </div>
             </div>
 

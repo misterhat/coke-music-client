@@ -1,8 +1,6 @@
-const ActionBar = require('./action-bar');
 const Character = require('./character');
-const Chat = require('./chat');
 const rooms = require('coke-music-data/rooms.json');
-const { cutPolygon, shadeImage, } = require('./draw');
+const { createCanvas, cutPolygon, shadeImage } = require('./draw');
 
 const TILE_WIDTH = 70;
 const TILE_HEIGHT = 36;
@@ -22,13 +20,19 @@ class Room {
         this.tileSelectX = -1;
         this.tileSelectY = -1;
 
-        this.statusIngame = document.getElementById('coke-music-status-ingame');
+        this.roomInfo = document.getElementById('coke-music-room-info');
+        this.roomInfoName = document.getElementById('coke-music-studio-name');
+        this.roomInfoOwner = document.getElementById('coke-music-studio-owner');
 
-        this.chat = new Chat(this.game, this);
-        this.actionBar = new ActionBar(this.game);
+        this.settingsButton = document.getElementById(
+            'coke-music-toggle-settings'
+        );
+
+        this.statusIngame = document.getElementById('coke-music-status-ingame');
 
         this.boundOnMessage = this.onMessage.bind(this);
         this.boundOnTab = this.onTab.bind(this);
+        this.boundOnSettings = this.onSettings.bind(this);
     }
 
     onMessage(message) {
@@ -63,7 +67,7 @@ class Room {
                     break;
                 }
 
-                this.chat.addChatMessage({
+                this.game.chat.addChatMessage({
                     username: character.username,
                     message: message.message,
                     x: message.x,
@@ -77,7 +81,15 @@ class Room {
     onTab(event) {
         if (event.key === 'Tab') {
             event.preventDefault();
-            this.chat.input.focus();
+            this.game.chat.input.focus();
+        }
+    }
+
+    onSettings() {
+        if (this.game.settings.open) {
+            this.game.settings.destroy();
+        } else {
+            this.game.settings.init();
         }
     }
 
@@ -189,6 +201,39 @@ class Room {
         }
     }
 
+    clipForeground() {
+        const { canvas, context } = createCanvas(
+            this.roomCanvas.width,
+            this.roomCanvas.height
+        );
+
+        const points = this.foreground;
+
+        context.beginPath();
+
+        context.moveTo(points[0].x, points[0].y);
+
+        for (let i = 1; i < points.length; i += 1) {
+            const { x, y } = points[i];
+
+            context.lineTo(x, y);
+        }
+
+        context.closePath();
+        context.clip();
+        context.drawImage(this.roomCanvas, 0, 0);
+
+        this.foregroundCanvas = canvas;
+    }
+
+    drawForeground() {
+        this.game.context.drawImage(
+            this.foregroundCanvas,
+            this.backgroundOffsetX,
+            this.backgroundOffsetY
+        );
+    }
+
     drawRoom() {
         this.roomContext.drawImage(this.backgroundImage, 0, 0);
 
@@ -196,13 +241,30 @@ class Room {
         this.drawWalls();
     }
 
-
-    init({ name, characters, wallType, tileType }) {
-        this.chat.init();
-        this.actionBar.init();
+    init(properties) {
+        this.game.navigation.destroy();
+        this.game.chat.init();
+        this.game.actionBar.init();
 
         this.game.mouseDown = false;
 
+        this.characters.clear();
+
+        const {
+            id,
+            ownerID,
+            ownerName,
+            studio,
+            name,
+            characters,
+            wallType,
+            tileType
+        } = properties;
+
+        this.id = id;
+        this.ownerID = ownerID;
+        this.ownerName = ownerName;
+        this.studio = studio;
         this.name = name;
 
         Object.assign(this, rooms[this.name]);
@@ -254,9 +316,19 @@ class Room {
         }
 
         this.drawRoom();
+        this.clipForeground();
 
+        this.roomInfoName.textContent = studio;
+        this.roomInfoOwner.textContent = ownerName;
+
+        if (this.ownerID === this.game.characterID) {
+            this.settingsButton.addEventListener('click', this.boundOnSettings);
+
+            this.settingsButton.style.display = 'inline';
+        }
+
+        this.roomInfo.style.display = 'block';
         this.statusIngame.style.display = 'block';
-
     }
 
     update() {
@@ -264,7 +336,7 @@ class Room {
             character.update();
         }
 
-        if (this.game.openPanel) {
+        if (this.game.isPanelOpen()) {
             return;
         }
 
@@ -313,21 +385,45 @@ class Room {
             );
         }
 
-        // TODO depth sorting
+        const drawable = [
+            {
+                y: this.exit.y,
+                draw: () => {
+                    this.drawForeground();
+                }
+            },
+            ...this.characters.values()
+        ].sort((a, b) => {
+            if (a.y >= b.y) {
+                return 1;
+            }
 
-        const drawable = [];
+            if (a.y < b.y) {
+                return -1;
+            }
 
-        for (const character of this.characters.values()) {
-            character.draw();
+            return 0;
+        });
+
+        for (const entity of drawable) {
+            entity.draw();
         }
     }
 
     destroy() {
-        this.chat.destroy();
-        this.actionBar.init();
+        this.game.navigation.destroy();
+        this.game.chat.destroy();
+        this.game.inventory.destroy();
+        this.game.actionBar.destroy();
+        this.game.settings.destroy();
 
         this.game.removeListener('message', this.boundOnMessage);
         window.removeEventListener('keypress', this.boundOnTab);
+        this.settingsButton.removeEventListener('click', this.boundOnSettings);
+
+        this.roomInfo.style.display = 'none';
+        this.settingsButton.style.display = 'none';
+        this.statusIngame.style.display = 'none';
     }
 }
 

@@ -1,14 +1,10 @@
-const Navigation  = require('./navigation');
-
 class Entry {
     constructor(game) {
         this.game = game;
-
-        this.navigation = new Navigation(this.game, true);
     }
 
     init() {
-        this.navigation.init();
+        this.game.navigation.init({ isEntry: true });
 
         this.backgroundImage = this.game.images['/entry.png'];
 
@@ -34,7 +30,7 @@ class Entry {
     }
 
     destroy() {
-        this.navigation.destroy();
+        this.game.navigation.destroy();
     }
 }
 

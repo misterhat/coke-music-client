@@ -1,7 +1,12 @@
+const ActionBar = require('./action-bar');
+const Chat = require('./chat');
 const Entry = require('./entry');
+const Inventory = require('./inventory');
 const Login = require('./login');
+const Navigation = require('./navigation');
 const Register = require('./register');
 const Room = require('./room');
+const Settings = require('./settings');
 const rooms = require('coke-music-data/rooms.json');
 const { EventEmitter } = require('events');
 
@@ -26,6 +31,7 @@ const PRELOAD_IMAGES = [
     '/character/hats.png',
     '/character/bodies.png',
     '/character/arms.png',
+    '/character/shirts.png',
     '/character/shadow.png',
 
     '/message_name.png'
@@ -54,6 +60,8 @@ class Game extends EventEmitter {
         this.port = port || 43594;
         this.ssl = !!ssl;
 
+        this.loadingDiv = document.getElementById('coke-music-loading');
+
         this.canvas = document.createElement('canvas');
 
         this.canvas.width = WIDTH;
@@ -68,8 +76,6 @@ class Game extends EventEmitter {
         this.mouseY = 0;
         this.mouseDown = false;
 
-        this.loadingDiv = document.getElementById('coke-music-loading');
-
         this.addEventListeners();
 
         this.states = {
@@ -79,7 +85,16 @@ class Game extends EventEmitter {
             room: new Room(this)
         };
 
+        // substates
+        this.navigation = new Navigation(this);
+        this.chat = new Chat(this);
+        this.inventory = new Inventory(this);
+        this.actionBar = new ActionBar(this);
+        this.settings = new Settings(this);
+
         this.socket = null;
+
+        this.characterID = null;
 
         // milliseconds per frame
         this.frameMs = 1000 / 30;
@@ -88,23 +103,24 @@ class Game extends EventEmitter {
         this.boundUpdate = this.update.bind(this);
     }
 
+    isPanelOpen() {
+        return this.navigation.open || this.inventory.open;
+    }
+
     addEventListeners() {
         this.on('message', (message) => {
             switch (message.type) {
                 case 'join-room':
-                    this.changeState('room', {
-                        name: message.name,
-                        characters: message.characters
-                    });
+                    this.changeState('room', message);
                     break;
             }
         });
 
-        this.container.addEventListener('mousemove', (event) => {
+        window.addEventListener('mousemove', (event) => {
             const { x, y } = getMousePosition(this.canvas, event);
 
-            this.mouseX = x;
-            this.mouseY = y;
+            this.mouseX = Math.min(WIDTH, Math.max(0, x));
+            this.mouseY = Math.min(HEIGHT, Math.max(0, y));
         });
 
         this.container.addEventListener('mousedown', (event) => {
@@ -220,6 +236,10 @@ class Game extends EventEmitter {
     }
 
     update() {
+        if (this.inventory.open) {
+            this.inventory.update();
+        }
+
         this.state.update();
         setTimeout(this.boundUpdate, Math.floor(this.frameMs));
     }

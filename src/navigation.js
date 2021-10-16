@@ -1,22 +1,24 @@
 // sub-state
 
 class Navigation {
-    constructor(game, isEntry = true) {
+    constructor(game) {
         this.game = game;
-        this.isEntry = isEntry;
 
         this.panel = document.getElementById('coke-music-navigation');
-        this.roomTable = document.getElementById('coke-music-studio-table');
 
         this.closeButton = document.getElementById(
             'coke-music-navigation-close'
         );
+
+        this.roomTable = document.getElementById('coke-music-studio-table');
+        this.createButton = document.getElementById('coke-music-create-studio');
 
         this.open = false;
         this.rooms = [];
 
         this.boundOnMessage = this.onMessage.bind(this);
         this.boundOnClose = this.onClose.bind(this);
+        this.boundOnCreate = this.onCreate.bind(this);
     }
 
     onMessage(message) {
@@ -31,6 +33,10 @@ class Navigation {
 
     onClose() {
         this.destroy();
+    }
+
+    onCreate() {
+        this.game.write({ type: 'create-room' });
     }
 
     clearRoomTable() {
@@ -54,7 +60,7 @@ class Navigation {
             const nameTd = document.createElement('td');
             const nameLink = document.createElement('button');
             nameLink.className = 'coke-music-link';
-            nameLink.textContent = room.name;
+            nameLink.textContent = room.studio;
             nameLink.onclick = onJoinRoom;
             nameTd.appendChild(nameLink);
             tr.appendChild(nameTd);
@@ -71,11 +77,14 @@ class Navigation {
         }
     }
 
-    init() {
+    init({ isEntry }) {
+        this.isEntry = isEntry;
+
         this.open = true;
 
         this.game.on('message', this.boundOnMessage);
         this.closeButton.addEventListener('click', this.boundOnClose);
+        this.createButton.addEventListener('click', this.boundOnCreate);
 
         this.clearRoomTable();
 
@@ -86,15 +95,17 @@ class Navigation {
     }
 
     destroy() {
-        this.game.openPanel = null;
+        this.game.actionBar.toggleSelected('navigation', false);
+
         this.open = false;
 
         this.game.removeListener('message', this.boundOnMessage);
         this.closeButton.removeEventListener('click', this.boundOnClose);
-
-        this.clearRoomTable();
+        this.createButton.removeEventListener('click', this.boundOnCreate);
 
         this.panel.style.display = 'none';
+
+        this.clearRoomTable();
     }
 }
 

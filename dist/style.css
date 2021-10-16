@@ -5,15 +5,15 @@ body {
 .coke-music-container {
     background-color: #000;
     color: #eddbc5;
-    /*text-shadow: #000 1px 1px;*/
     font-family: sans-serif;
     font-size: 12px;
     height: 600px;
     margin-left: auto;
     margin-right: auto;
+    overflow: hidden;
     position: relative;
-    width: 800px;
     user-select: none;
+    width: 800px;
 }
 
 .coke-music-container p {
@@ -122,7 +122,6 @@ h6 {
 }
 
 .coke-music-paper {
-    /*background-color: #eedbc6;*/
     background-image: url(/assets/paper-middle.png);
     background-repeat: repeat-y;
     border-radius: 8px;
@@ -146,6 +145,13 @@ h6 {
     left: 418px;
     top: 160px;
     width: 328px;
+}
+
+.coke-music-studio-settings {
+    display: none;
+    left: 424px;
+    top: 68px;
+    width: 314px;
 }
 
 /* bottom status bar */
@@ -196,8 +202,8 @@ h6 {
     width: 20px;
 }
 
-.coke-music-action:hover {
-    background-position-y: 22px;
+.coke-music-action:hover, .coke-music-action-selected {
+    background-position-y: -21px;
 }
 
 .coke-music-action-messages {
@@ -289,6 +295,11 @@ h6 {
 
 .coke-music-table tr {
     border-bottom: 1px dotted #000;
+    margin-bottom: 4px;
+}
+
+.coke-music-table td {
+    padding: 4px 0 4px 0;
 }
 
 .coke-music-chat-messages {
@@ -337,26 +348,40 @@ h6 {
 }
 
 .coke-music-inventory {
-    width: 238px;
+    background-image: url(/assets/inventory.png);
+    display: none;
     height: 336px;
     position: absolute;
-    background-image: url(/assets/inventory.png);
-    top: 100px;
-    left: 100px;
+    width: 238px;
+    opacity: 0.75;
+}
+
+.coke-music-inventory:hover {
+    opacity: 1;
 }
 
 .coke-music-inventory-header {
     color: #000;
+    margin: 0;
     position: absolute;
     text-align: center;
     text-shadow: none;
-    top: 50px;
+    top: 42px;
     width: 238px;
-    margin: 0;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    font-size: 12px;
+}
+
+.coke-music-inventory-header:hover {
+    cursor: pointer;
+}
+
+.coke-music-inventory-header:active {
+    cursor: move;
 }
 
 .coke-music-inventory-items {
-    /*background-color: #f0f;*/
     height: 180px;
     left: 30px;
     position: absolute;
@@ -381,17 +406,20 @@ h6 {
     margin: 0;
     padding: 0;
     position: absolute;
+    width: 19px;
+    z-index: 2;
 }
 
 .coke-music-inventory-close {
     background-image: url(/assets/inventory_close.png);
+    right: 48px;
+    top: 48px;
 }
 
 .coke-music-panel-close {
     background-image: url(/assets/panel_close.png);
     right: 4px;
     top: 4px;
-    width: 19px;
 }
 
 .coke-music-pages {
@@ -406,7 +434,7 @@ h6 {
     text-align: center;
 }
 
-.coke-music-page {
+.coke-music-arrow {
     background-color: transparent;
     background-image: url(/assets/arrow.png);
     width: 12px;
@@ -419,11 +447,37 @@ h6 {
     top: -4px;
 }
 
-.coke-music-page-previous {
+.coke-music-arrow-previous {
     margin-right: 4px;
 }
 
-.coke-music-page-next {
+.coke-music-arrow-next {
     transform: scaleX(-1);
     margin-left: 4px;
+}
+
+.coke-music-room-info {
+    display: none;
+    bottom: 60px;
+    color: #80736a;
+    font-size: 10px;
+    font-weight: bold;
+    left: 36px;
+    position: absolute;
+    text-shadow: #000 1px 1px;
+    z-index: 2;
+}
+
+.coke-music-room-types {
+    margin: 4px;
+    height: 80px;
+    overflow-y: scroll;
+}
+
+.coke-music-room-type {
+    width: 80px;
+}
+
+.coke-music-wall-type {
+    width: 20px;
 }
