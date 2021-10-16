@@ -385,8 +385,14 @@ class Room {
             );
         }
 
+        // don't draw entities while settings is open
+        if (this.game.settings.open) {
+            return;
+        }
+
         const drawable = [
             {
+                foreground: true,
                 y: this.exit.y,
                 draw: () => {
                     this.drawForeground();
@@ -394,7 +400,11 @@ class Room {
             },
             ...this.characters.values()
         ].sort((a, b) => {
-            if (a.y >= b.y) {
+            if (a.y === b.y) {
+                return a.foreground ? 1 : -1;
+            }
+
+            if (a.y > b.y) {
                 return 1;
             }
 

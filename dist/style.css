@@ -20,6 +20,13 @@ body {
     margin: 4px;
 }
 
+.coke-music-container hr {
+    background-color: #ad7a4b;
+    border: none;
+    height: 2px;
+    margin: 4px;
+}
+
 .coke-music-loading {
     position: absolute;
     color: #fff;
@@ -150,7 +157,7 @@ h6 {
 .coke-music-studio-settings {
     display: none;
     left: 424px;
-    top: 68px;
+    top: 88px;
     width: 314px;
 }
 
@@ -234,11 +241,11 @@ h6 {
 
 .coke-music-shadow {
     pointer-events: none;
-    box-shadow: inset 0 0 6px 24px #000;
-    height: 96%;
+    box-shadow: inset 0 0 6px 26px #000;
+    height: 584px;
     left: 0;
     position: absolute;
-    top: 44px;
+    top: 40px;
     width: 100%;
     z-index: 2;
 }
@@ -468,14 +475,31 @@ h6 {
     z-index: 2;
 }
 
-.coke-music-room-types {
+.coke-music-setting-types {
     margin: 4px;
-    height: 80px;
+    height: 88px;
     overflow-y: scroll;
+    position: relative;
 }
 
-.coke-music-room-type {
+/* used for rooms and tiles */
+
+.coke-music-setting-type {
     width: 80px;
+    margin: 8px;
+    border-radius: 4px;
+    box-sizing: border-box;
+    transition: transform 0.1s;
+}
+
+.coke-music-setting-type-selected {
+    /*border: 2px solid #ad7a4b;*/
+    border: 2px solid #f00;
+}
+
+.coke-music-setting-type:hover {
+    transform: scale(1.2);
+    cursor: pointer;
 }
 
 .coke-music-wall-type {

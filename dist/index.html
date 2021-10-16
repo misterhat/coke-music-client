@@ -303,6 +303,11 @@
                 id="coke-music-studio-settings"
                 class="coke-music-panel coke-music-studio-settings"
             >
+                <button
+                    id="coke-music-settings-close"
+                    class="coke-music-close coke-music-panel-close"
+                ></button>
+
                 <h3>My Studio Settings</h3>
 
                 <div class="coke-music-paper">
@@ -321,17 +326,10 @@
                     <div>
                         <label>
                             <strong>Room:</strong>
-                            <div class="coke-music-room-types">
-                                <img
-                                    class="coke-music-room-type"
-                                    src="/assets/rooms/studio_a.png"
-                                />
-
-                                <img
-                                    class="coke-music-room-type"
-                                    src="/assets/rooms/studio_b.png"
-                                />
-                            </div>
+                            <div
+                                id="coke-music-room-types"
+                                class="coke-music-setting-types"
+                            ></div>
                         </label>
                     </div>
                     <hr />
@@ -367,6 +365,18 @@
                         </label>
                     </div>
                 </div>
+                <button
+                    id="coke-music-settings-save"
+                    class="coke-music-button"
+                >
+                    Save
+                </button>
+                <button
+                    id="coke-music-settings-delete"
+                    class="coke-music-button"
+                >
+                    Delete
+                </button>
             </div>
 
             <div class="coke-music-shadow"></div>

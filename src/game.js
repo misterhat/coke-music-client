@@ -104,7 +104,9 @@ class Game extends EventEmitter {
     }
 
     isPanelOpen() {
-        return this.navigation.open || this.inventory.open;
+        return (
+            this.navigation.open || this.inventory.open || this.settings.open
+        );
     }
 
     addEventListeners() {
@@ -112,6 +114,9 @@ class Game extends EventEmitter {
             switch (message.type) {
                 case 'join-room':
                     this.changeState('room', message);
+                    break;
+                case 'leave-room':
+                    this.changeState('navigation', { isEntry: true });
                     break;
             }
         });
