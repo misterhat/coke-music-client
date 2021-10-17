@@ -30,6 +30,7 @@ class ActionBar {
                     state.destroy();
                     this.toggleSelected(name, false);
                 } else {
+                    this.game.settings.destroy();
                     state.init({ isEntry: false });
                     this.toggleSelected(name, true);
                 }

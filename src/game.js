@@ -8,6 +8,8 @@ const Register = require('./register');
 const Room = require('./room');
 const Settings = require('./settings');
 const rooms = require('coke-music-data/rooms.json');
+const walls = require('coke-music-data/walls.json');
+const tiles = require('coke-music-data/tiles.json');
 const { EventEmitter } = require('events');
 
 const WIDTH = 800;
@@ -17,12 +19,6 @@ const PRELOAD_IMAGES = [
     '/entry.png',
 
     '/tiles/selected.png',
-
-    '/walls/wall_a_left.png',
-    '/walls/wall_a_right.png',
-
-    '/tiles/purple_carpet.png',
-    '/tiles/brown_carpet.png',
 
     '/character/heads.png',
     '/character/faces.png',
@@ -38,6 +34,12 @@ const PRELOAD_IMAGES = [
 ];
 
 PRELOAD_IMAGES.push(...Object.keys(rooms).map((name) => `/rooms/${name}.png`));
+PRELOAD_IMAGES.push(...tiles.map(({ file } ) => `/tiles/${file}.png`));
+
+for (const { file } of walls) {
+    PRELOAD_IMAGES.push(`/walls/${file}_left.png`);
+    PRELOAD_IMAGES.push(`/walls/${file}_right.png`);
+}
 
 function getMousePosition(canvas, e) {
     const boundingRect = canvas.getBoundingClientRect();

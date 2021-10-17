@@ -490,6 +490,7 @@ h6 {
     border-radius: 4px;
     box-sizing: border-box;
     transition: transform 0.1s;
+    display: inline-block;
 }
 
 .coke-music-setting-type-selected {

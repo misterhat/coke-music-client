@@ -47,6 +47,11 @@ class Room {
                 break;
             }
             case 'remove-character': {
+                if (message.id === this.game.characterID) {
+                    this.game.changeState('entry');
+                    return;
+                }
+
                 this.characters.delete(message.id);
                 break;
             }
@@ -128,6 +133,10 @@ class Room {
     }
 
     drawTiles() {
+        if (!this.tile) {
+            return;
+        }
+
         for (let isoY = 0; isoY < this.height; isoY += 1) {
             for (let isoX = 0; isoX < this.width; isoX += 1) {
                 if (this.map[isoY][isoX]) {
@@ -169,6 +178,10 @@ class Room {
     }
 
     drawWalls() {
+        if (!this.wall) {
+            return;
+        }
+
         for (const [wallIndex, wallSection] of Object.entries(this.walls)) {
             const isLeft = wallSection.orientation === 'left';
             const image = isLeft ? this.wallLeftImage : this.wallRightImage;
@@ -239,6 +252,52 @@ class Room {
 
         this.drawTiles();
         this.drawWalls();
+        this.clipForeground();
+    }
+
+    updateRoomType() {
+        Object.assign(this, rooms[this.name]);
+
+        this.width = this.map[0].length;
+        this.height = this.map.length;
+
+        // the base background image without any custom walls or tiles applied
+        this.backgroundImage = this.game.images[`/rooms/${this.name}.png`];
+
+        // a buffered image of the background with walls and tiles applied
+        this.roomCanvas = document.createElement('canvas');
+
+        this.roomCanvas.width = this.backgroundImage.width;
+        this.roomCanvas.height = this.backgroundImage.width;
+
+        this.roomContext = this.roomCanvas.getContext('2d');
+
+        // offsets used to centre the room image
+        this.backgroundOffsetX = Math.floor(
+            this.game.canvas.width / 2 - this.backgroundImage.width / 2
+        );
+
+        this.backgroundOffsetY = Math.floor(
+            this.game.canvas.height / 2 - this.backgroundImage.height / 2
+        );
+    }
+
+    updateTileType() {
+        if (this.tile) {
+            this.tileImage = this.game.images[`/tiles/${this.tile}.png`];
+        }
+    }
+
+    updateWallType() {
+        if (this.wall) {
+            this.wallLeftImage = this.game.images[
+                `/walls/${this.wall}_left.png`
+            ];
+
+            this.wallRightImage = this.game.images[
+                `/walls/${this.wall}_right.png`
+            ];
+        }
     }
 
     init(properties) {
@@ -257,46 +316,23 @@ class Room {
             studio,
             name,
             characters,
-            wallType,
-            tileType
+            wall,
+            tile
         } = properties;
 
         this.id = id;
         this.ownerID = ownerID;
         this.ownerName = ownerName;
         this.studio = studio;
+
         this.name = name;
+        this.updateRoomType();
 
-        Object.assign(this, rooms[this.name]);
+        this.tile = tile;
+        this.updateTileType();
 
-        this.width = this.map[0].length;
-        this.height = this.map.length;
-
-        // the base background image without any custom walls or tiles applied
-        this.backgroundImage = this.game.images[`/rooms/${name}.png`];
-
-        // a buffered image of the background with walls and tiles applied
-        this.roomCanvas = document.createElement('canvas');
-
-        this.roomCanvas.width = this.backgroundImage.width;
-        this.roomCanvas.height = this.backgroundImage.width;
-
-        this.roomContext = this.roomCanvas.getContext('2d');
-
-        // unshaded wall sprites
-        this.wallLeftImage = this.game.images['/walls/wall_a_left.png'];
-        this.wallRightImage = this.game.images['/walls/wall_a_right.png'];
-
-        // offsets used to centre the room image
-        this.backgroundOffsetX = Math.floor(
-            this.game.canvas.width / 2 - this.backgroundImage.width / 2
-        );
-
-        this.backgroundOffsetY = Math.floor(
-            this.game.canvas.height / 2 - this.backgroundImage.height / 2
-        );
-
-        this.tileImage = this.game.images['/tiles/brown_carpet.png'];
+        this.wall = wall;
+        this.updateWallType();
 
         // the yellow tile-select image
         this.tileSelectImage = this.game.images['/tiles/selected.png'];
@@ -316,7 +352,6 @@ class Room {
         }
 
         this.drawRoom();
-        this.clipForeground();
 
         this.roomInfoName.textContent = studio;
         this.roomInfoOwner.textContent = ownerName;
@@ -400,15 +435,18 @@ class Room {
             },
             ...this.characters.values()
         ].sort((a, b) => {
-            if (a.y === b.y) {
+            const aY = a.y;
+            const bY = b.toY === a.y ? b.toY : b.y;
+
+            if (aY === bY) {
                 return a.foreground ? 1 : -1;
             }
 
-            if (a.y > b.y) {
+            if (aY > bY) {
                 return 1;
             }
 
-            if (a.y < b.y) {
+            if (aY < bY) {
                 return -1;
             }
 
