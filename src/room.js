@@ -1,4 +1,5 @@
 const Character = require('./character');
+const GameObject = require('./game-object');
 const rooms = require('coke-music-data/rooms.json');
 const { createCanvas, cutPolygon, shadeImage } = require('./draw');
 
@@ -29,6 +30,10 @@ class Room {
         );
 
         this.statusIngame = document.getElementById('coke-music-status-ingame');
+
+        this.objects.add(
+            new GameObject(this.game, this, { name: 'northern_minibar' })
+        );
 
         this.boundOnMessage = this.onMessage.bind(this);
         this.boundOnTab = this.onTab.bind(this);
@@ -371,6 +376,10 @@ class Room {
             character.update();
         }
 
+        for (const object of this.objects.values()) {
+            object.update();
+        }
+
         if (this.game.isPanelOpen()) {
             return;
         }
@@ -433,8 +442,10 @@ class Room {
                     this.drawForeground();
                 }
             },
-            ...this.characters.values()
+            ...this.characters.values(),
+            ...this.objects.values()
         ].sort((a, b) => {
+            // TODO also sort by x
             const aY = a.y;
             const bY = b.toY === a.y ? b.toY : b.y;
 

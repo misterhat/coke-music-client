@@ -206,15 +206,11 @@ class Character {
         this.room = room;
 
         // isometric position
-        this.x = 5;
-        this.y = 10;
+        this.x = 0;
+        this.y = 0;
 
         this.drawX = 0;
         this.drawY = 0;
-
-        console.log(this.game);
-
-        this.image = this.game.images['/character_test.png'];
 
         this.isFemale = false;
 
@@ -230,6 +226,7 @@ class Character {
         this.hatIndex = -1;
         //this.bodyIndex = 0;
         this.shirtIndex = 0;
+        this.sleeveIndex = 0;
         this.walkIndex = -1;
 
         this.skinTone = 0.25;
@@ -477,6 +474,47 @@ class Character {
                 ARM_SIZE,
                 ARM_SIZE
             );
+
+            if (this.sleeveIndex === -1) {
+                continue;
+            }
+
+            // sleeves
+            const {
+                canvas: sleeveCanvas,
+                context: sleeveContext
+            } = createCanvas(ARM_SIZE, ARM_SIZE);
+
+            if (rotate) {
+                sleeveContext.translate(ARM_SIZE, 0);
+                sleeveContext.scale(-1, 1);
+            }
+
+            sleeveContext.drawImage(
+                this.game.images['/character/sleeves.png'],
+                this.sleeveIndex * ARM_SIZE,
+                armIndex * ARM_SIZE,
+                ARM_SIZE,
+                ARM_SIZE,
+                0,
+                0,
+                ARM_SIZE,
+                ARM_SIZE
+            );
+
+            colourizeImage(sleeveCanvas, this.shirtColour);
+
+            bodyContext.drawImage(
+                sleeveCanvas,
+                0,
+                0,
+                ARM_SIZE,
+                ARM_SIZE,
+                offsetX,
+                offsetY,
+                ARM_SIZE,
+                ARM_SIZE
+            );
         }
 
         // skin tone
@@ -659,6 +697,7 @@ class Character {
             if (Math.floor(distance) === 0) {
                 this.resetDrawOffset();
                 this.update();
+                // TODO we can probably do something a bit smoother here
 
                 return;
             }

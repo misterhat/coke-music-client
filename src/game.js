@@ -7,9 +7,10 @@ const Navigation = require('./navigation');
 const Register = require('./register');
 const Room = require('./room');
 const Settings = require('./settings');
+const furniture = require('coke-music-data/furniture.json');
 const rooms = require('coke-music-data/rooms.json');
-const walls = require('coke-music-data/walls.json');
 const tiles = require('coke-music-data/tiles.json');
+const walls = require('coke-music-data/walls.json');
 const { EventEmitter } = require('events');
 
 const WIDTH = 800;
@@ -28,12 +29,14 @@ const PRELOAD_IMAGES = [
     '/character/bodies.png',
     '/character/arms.png',
     '/character/shirts.png',
+    '/character/sleeves.png',
     '/character/shadow.png',
 
     '/message_name.png'
 ];
 
 PRELOAD_IMAGES.push(...Object.keys(rooms).map((name) => `/rooms/${name}.png`));
+PRELOAD_IMAGES.push(...Object.keys(furniture).map((name) => `/furniture/${name}.png`));
 PRELOAD_IMAGES.push(...tiles.map(({ file } ) => `/tiles/${file}.png`));
 
 for (const { file } of walls) {

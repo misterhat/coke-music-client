@@ -141,7 +141,6 @@ h6 {
     width: 292px;
 }
 
-
 .coke-music-login {
     left: 418px;
     top: 224px;
@@ -155,9 +154,11 @@ h6 {
 }
 
 .coke-music-studio-settings {
+    box-sizing: border-box;
     display: none;
+    height: 432px;
     left: 424px;
-    top: 88px;
+    top: 58px;
     width: 314px;
 }
 
@@ -209,7 +210,8 @@ h6 {
     width: 20px;
 }
 
-.coke-music-action:hover, .coke-music-action-selected {
+.coke-music-action:hover,
+.coke-music-action-selected {
     background-position-y: -21px;
 }
 
@@ -330,7 +332,8 @@ h6 {
     display: inline-block;
 }
 
-.coke-music-chat-name, .coke-music-chat-message {
+.coke-music-chat-name,
+.coke-music-chat-message {
     background-size: 100% 23px;
     box-sizing: border-box;
     display: inline-block;
@@ -477,18 +480,22 @@ h6 {
 
 .coke-music-setting-types {
     margin: 4px;
-    height: 88px;
+    height: 96px;
     overflow-y: scroll;
     position: relative;
+    overflow-x: hidden;
 }
 
 /* used for rooms and tiles */
 
 .coke-music-setting-type {
-    width: 80px;
-    margin: 8px;
-    border-radius: 4px;
+    height: auto;
+    width: auto;
+    max-width: 80px;
+    max-height: 80px;
     box-sizing: border-box;
+    margin: 4px;
+    border-radius: 4px;
     transition: transform 0.1s;
     display: inline-block;
 }
@@ -501,8 +508,4 @@ h6 {
 .coke-music-setting-type:hover {
     transform: scale(1.2);
     cursor: pointer;
-}
-
-.coke-music-wall-type {
-    width: 20px;
 }

@@ -9,10 +9,15 @@ class Settings {
         this.container = document.getElementById('coke-music-studio-settings');
         this.closeButton = document.getElementById('coke-music-settings-close');
 
-        this.studioInput = document.getElementById('coke-music-settings-studio-name');
+        // custom name input
+        this.studioInput = document.getElementById(
+            'coke-music-settings-studio-name'
+        );
 
+        // containers
         this.roomTypes = document.getElementById('coke-music-room-types');
         this.floorTypes = document.getElementById('coke-music-floor-types');
+        this.wallTypes = document.getElementById('coke-music-wall-types');
 
         this.saveButton = document.getElementById('coke-music-settings-save');
 
@@ -25,7 +30,11 @@ class Settings {
         );
 
         this.open = false;
+
         this.room = null;
+        this.oldRoomName = null;
+        this.oldRoomTile = null;
+        this.oldRoomWall = null;
 
         this.boundOnClose = this.onClose.bind(this);
         this.boundOnSave = this.onSave.bind(this);
@@ -35,6 +44,14 @@ class Settings {
     onClose() {
         if (this.oldRoomName !== this.room.name) {
             this.changeRoomType(this.oldRoomName);
+        }
+
+        if (this.oldRoomTile !== this.room.tile) {
+            this.changeFloorType(this.oldRoomTile);
+        }
+
+        if (this.oldRoomWall !== this.room.wall) {
+            this.changeWallType(this.oldRoomWall);
         }
 
         this.destroy();
@@ -53,13 +70,13 @@ class Settings {
             type: 'save-room',
             name: this.room.name,
             studio,
-            tile: this.tile,
-            wall: this.wall
+            tile: this.room.tile,
+            wall: this.room.wall
         });
     }
 
     onDelete() {
-        if (!confirm("Are you sure you want to delete this studio?")) {
+        if (!confirm('Are you sure you want to delete this studio?')) {
             return;
         }
 
@@ -137,7 +154,7 @@ class Settings {
 
             floorImg.src = `/assets/tiles/${file}.png`;
 
-            floorImg.onclick = (event) => {
+            floorImg.onmousedown = (event) => {
                 event.preventDefault();
 
                 let floor = file;
@@ -150,7 +167,53 @@ class Settings {
                 this.updateFloors();
             };
 
+            floorImg.setAttribute('draggable', false);
+
             this.floorTypes.appendChild(floorImg);
+        }
+    }
+
+    clearWalls() {
+        this.wallTypes.innerHTML = '';
+    }
+
+    changeWallType(wall) {
+        this.room.wall = wall;
+
+        this.room.updateWallType();
+        this.room.drawRoom();
+    }
+
+    updateWalls() {
+        this.clearWalls();
+
+        for (const { name, file } of walls) {
+            const wallImg = document.createElement('img');
+
+            wallImg.className = 'coke-music-setting-type';
+
+            if (this.room.wall === file) {
+                wallImg.classList.add('coke-music-setting-type-selected');
+            }
+
+            wallImg.src = `/assets/walls/${file}_left.png`;
+
+            wallImg.onmousedown = (event) => {
+                event.preventDefault();
+
+                let wall = file;
+
+                if (file === this.room.wall) {
+                    wall = null;
+                }
+
+                this.changeWallType(wall);
+                this.updateWalls();
+            };
+
+            wallImg.setAttribute('draggable', false);
+
+            this.wallTypes.appendChild(wallImg);
         }
     }
 
@@ -163,9 +226,12 @@ class Settings {
         }
 
         this.oldRoomName = this.room.name;
+        this.oldRoomTile = this.room.tile;
+        this.oldRoomWall = this.room.wall;
 
         this.updateRooms();
         this.updateFloors();
+        this.updateWalls();
 
         this.closeButton.addEventListener('click', this.boundOnClose);
         this.saveButton.addEventListener('click', this.boundOnSave);
