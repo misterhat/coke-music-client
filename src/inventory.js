@@ -1,3 +1,4 @@
+const GameObject = require('./game-object');
 const furniture = require('coke-music-data/furniture.json');
 
 class Inventory {
@@ -7,6 +8,10 @@ class Inventory {
         this.container = document.getElementById('coke-music-inventory');
         this.header = document.getElementById('coke-music-inventory-header');
         this.close = document.getElementById('coke-music-inventory-close');
+
+        this.itemContainer = document.getElementById(
+            'coke-music-inventory-items'
+        );
 
         // absolute position of container
         this.x = 500;
@@ -38,6 +43,54 @@ class Inventory {
 
     onClose() {
         this.destroy();
+    }
+
+    clearInventory() {
+        this.itemContainer.innerHTML = '';
+    }
+
+    updateInventory() {
+        this.clearInventory();
+
+        for (const [index, item] of this.items.entries()) {
+            const itemDiv = document.createElement('div');
+
+            itemDiv.className = 'coke-music-inventory-item';
+            itemDiv.style.backgroundImage = `url(/assets/furniture/icons/${item.name}.png)`;
+            itemDiv.title = furniture[item.name].title;
+
+            itemDiv.onmousedown = (event) => {
+                event.preventDefault();
+
+                const { room } = this.game.states;
+
+                const object = new GameObject(
+                    this.game,
+                    room,
+                    this.items[index]
+                );
+
+                object.edit = true;
+
+                room.activeObject = object;
+
+                this.game.mouseDown = false;
+            };
+
+            itemDiv.onmouseup = () => {
+                this.game.mouseDown = false;
+                this.destroy();
+            };
+
+            itemDiv.setAttribute('draggable', false);
+
+            this.itemContainer.appendChild(itemDiv);
+        }
+
+        const clearDiv = document.createElement('div');
+
+        clearDiv.style.clear = 'both';
+        this.itemContainer.appendChild(clearDiv);
     }
 
     update() {
@@ -72,6 +125,8 @@ class Inventory {
         this.open = true;
         this.dragging = false;
 
+        this.updateInventory();
+
         this.container.style.display = 'block';
     }
 
@@ -84,6 +139,8 @@ class Inventory {
         this.game.actionBar.toggleSelected('inventory', false);
 
         this.container.style.display = 'none';
+
+        this.clearInventory();
     }
 }
 

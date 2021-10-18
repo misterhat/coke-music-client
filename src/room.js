@@ -1,5 +1,4 @@
 const Character = require('./character');
-const GameObject = require('./game-object');
 const rooms = require('coke-music-data/rooms.json');
 const { createCanvas, cutPolygon, shadeImage } = require('./draw');
 
@@ -34,6 +33,8 @@ class Room {
         // used for depth sorting
         this.drawableGrid = [];
 
+        this.activeObject = null;
+
         this.boundOnMessage = this.onMessage.bind(this);
         this.boundOnTab = this.onTab.bind(this);
         this.boundOnSettings = this.onSettings.bind(this);
@@ -57,10 +58,13 @@ class Room {
         this.drawableGrid[character.y][character.x] = null;
         this.drawableGrid[y][x] = character;
         character.move(x, y);
-        console.log(this.drawableGrid);
     }
 
     addObject(object) {
+        if (object.x === -1 || object.y === -1) {
+            return;
+        }
+
         const tileWidth =
             object.angle <= 1 ? object.tileWidth : object.tileHeight;
 
@@ -72,10 +76,6 @@ class Room {
                 this.drawableGrid[y][x] = object;
             }
         }
-
-        console.log(this.drawableGrid);
-
-        //this.drawableGrid[object.y][object.x] = object;
 
         this.objects.add(object);
     }
@@ -89,11 +89,6 @@ class Room {
                 character.y = message.y;
                 character.id = message.id;
                 this.addCharacter(character);
-
-                // TODO remove
-                this.addObject(
-                    new GameObject(this.game, this, { name: 'coke_couch' })
-                );
                 break;
             }
             case 'remove-character': {
@@ -289,13 +284,6 @@ class Room {
         context.drawImage(this.roomCanvas, 0, 0);
 
         this.foregroundCanvas = canvas;
-
-        this.drawableGrid[this.exit.y][this.exit.x] = {
-            foreground: true,
-            x: this.exit.x,
-            y: this.exit.y,
-            draw: this.drawForeground.bind(this)
-        };
     }
 
     drawForeground() {
@@ -319,6 +307,8 @@ class Room {
 
         this.width = this.map[0].length;
         this.height = this.map.length;
+
+        this.drawableGrid.length = 0;
 
         for (let y = 0; y < this.height; y += 1) {
             this.drawableGrid.push([]);
@@ -462,6 +452,13 @@ class Room {
             return;
         }
 
+        if (this.activeObject) {
+            this.activeObject.x = isoX;
+            this.activeObject.y = isoY;
+
+            this.activeObject.update();
+        }
+
         const { x: tileX, y: tileY } = this.isoToCoordinate(isoX, isoY);
 
         this.tileSelectX = tileX;
@@ -470,7 +467,13 @@ class Room {
         if (this.game.mouseDown) {
             this.game.mouseDown = false;
 
-            this.game.write({ type: 'walk', x: isoX, y: isoY });
+            if (this.activeObject) {
+                this.activeObject.edit = false;
+                this.addObject(this.activeObject);
+                this.activeObject = null;
+            } else {
+                this.game.write({ type: 'walk', x: isoX, y: isoY });
+            }
         }
     }
 
@@ -509,6 +512,10 @@ class Room {
                 entitiesDrawn.add(entity);
                 entity.draw();
 
+                if (entity.x === this.exit.x && entity.y === this.exit.y) {
+                    this.drawForeground();
+                }
+
                 if (
                     x < this.width &&
                     this.drawableGrid[y][x + 1] &&
@@ -517,6 +524,10 @@ class Room {
                     this.drawableGrid[y][x + 1].draw();
                 }
             }
+        }
+
+        if (this.activeObject) {
+            this.activeObject.draw();
         }
     }
 

@@ -14,8 +14,8 @@ class GameObject {
         this.edit = false;
 
         this.angle = 0;
-        this.x = 1;
-        this.y = 3;
+        this.x = -1;
+        this.y = -1;
 
         this.drawX = 0;
         this.drawY = 0;
@@ -35,6 +35,10 @@ class GameObject {
     }
 
     draw() {
+        if (this.x === -1 || this.y === -1) {
+            return;
+        }
+
         const { context } = this.game;
 
         if (this.edit) {
