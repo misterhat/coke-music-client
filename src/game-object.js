@@ -1,5 +1,7 @@
 const furniture = require('coke-music-data/furniture.json');
 
+// ne, sw, nw, se
+
 class GameObject {
     constructor(game, room, { name }) {
         this.game = game;
@@ -9,18 +11,23 @@ class GameObject {
 
         Object.assign(this, furniture[name]);
 
-        this.angle = 1;
+        this.edit = false;
+
+        this.angle = 0;
         this.x = 1;
-        this.y = 1;
+        this.y = 3;
 
         this.drawX = 0;
         this.drawY = 0;
     }
 
     update() {
+        const isoX = this.x;
+        const isoY = this.y + (this.angle > 1 ? 1 : 0);
+
         const { x: drawX, y: drawY } = this.room.isoToCoordinate(
-            this.x,
-            this.y
+            isoX,
+            isoY
         );
 
         this.drawX = drawX;
@@ -29,6 +36,10 @@ class GameObject {
 
     draw() {
         const { context } = this.game;
+
+        if (this.edit) {
+            context.globalAlpha = 0.5;
+        }
 
         context.drawImage(
             this.game.images[`/furniture/${this.name}.png`],
@@ -41,6 +52,8 @@ class GameObject {
             this.width,
             this.height
         );
+
+        context.globalAlpha = 1;
     }
 }
 

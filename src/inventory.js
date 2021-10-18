@@ -1,3 +1,5 @@
+const furniture = require('coke-music-data/furniture.json');
+
 class Inventory {
     constructor(game) {
         this.game = game;
@@ -6,14 +8,22 @@ class Inventory {
         this.header = document.getElementById('coke-music-inventory-header');
         this.close = document.getElementById('coke-music-inventory-close');
 
+        // absolute position of container
         this.x = 500;
         this.y = 184;
 
+        // offset when clicked with mouse
         this.offsetX = 0;
         this.offsetY = 0;
 
         this.open = false;
         this.dragging = false;
+
+        // [ { type, name } ]
+        this.items = [
+            { type: 'furniture', name: 'northern_minibar' },
+            { type: 'furniture', name: 'coke_couch' }
+        ];
 
         this.boundOnMouseDown = this.onMouseDown.bind(this);
         this.boundClose = this.onClose.bind(this);

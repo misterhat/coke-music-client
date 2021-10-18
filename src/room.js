@@ -31,13 +31,53 @@ class Room {
 
         this.statusIngame = document.getElementById('coke-music-status-ingame');
 
-        this.objects.add(
-            new GameObject(this.game, this, { name: 'northern_minibar' })
-        );
+        // used for depth sorting
+        this.drawableGrid = [];
 
         this.boundOnMessage = this.onMessage.bind(this);
         this.boundOnTab = this.onTab.bind(this);
         this.boundOnSettings = this.onSettings.bind(this);
+    }
+
+    addCharacter(character) {
+        this.drawableGrid[character.y][character.x] = character;
+        this.characters.set(character.id, character);
+    }
+
+    removeCharacter(character) {
+        if (!character) {
+            return;
+        }
+
+        this.drawableGrid[character.y][character.x] = null;
+        this.characters.delete(character.id);
+    }
+
+    moveCharacter(character, x, y) {
+        this.drawableGrid[character.y][character.x] = null;
+        this.drawableGrid[y][x] = character;
+        character.move(x, y);
+        console.log(this.drawableGrid);
+    }
+
+    addObject(object) {
+        const tileWidth =
+            object.angle <= 1 ? object.tileWidth : object.tileHeight;
+
+        const tileHeight =
+            object.angle <= 1 ? object.tileHeight : object.tileWidth;
+
+        for (let y = object.y; y < object.y + tileHeight; y += 1) {
+            for (let x = object.x; x < object.x + tileWidth; x += 1) {
+                this.drawableGrid[y][x] = object;
+            }
+        }
+
+        console.log(this.drawableGrid);
+
+        //this.drawableGrid[object.y][object.x] = object;
+
+        this.objects.add(object);
     }
 
     onMessage(message) {
@@ -48,7 +88,12 @@ class Room {
                 character.x = message.x;
                 character.y = message.y;
                 character.id = message.id;
-                this.characters.set(character.id, character);
+                this.addCharacter(character);
+
+                // TODO remove
+                this.addObject(
+                    new GameObject(this.game, this, { name: 'coke_couch' })
+                );
                 break;
             }
             case 'remove-character': {
@@ -57,7 +102,8 @@ class Room {
                     return;
                 }
 
-                this.characters.delete(message.id);
+                const character = this.characters.get(message.id);
+                this.removeCharacter(character);
                 break;
             }
             case 'move-character': {
@@ -67,7 +113,7 @@ class Room {
                     break;
                 }
 
-                character.move(message.x, message.y);
+                this.moveCharacter(character, message.x, message.y);
                 break;
             }
             case 'chat': {
@@ -83,6 +129,7 @@ class Room {
                     x: message.x,
                     y: message.y
                 });
+
                 break;
             }
         }
@@ -242,6 +289,13 @@ class Room {
         context.drawImage(this.roomCanvas, 0, 0);
 
         this.foregroundCanvas = canvas;
+
+        this.drawableGrid[this.exit.y][this.exit.x] = {
+            foreground: true,
+            x: this.exit.x,
+            y: this.exit.y,
+            draw: this.drawForeground.bind(this)
+        };
     }
 
     drawForeground() {
@@ -265,6 +319,14 @@ class Room {
 
         this.width = this.map[0].length;
         this.height = this.map.length;
+
+        for (let y = 0; y < this.height; y += 1) {
+            this.drawableGrid.push([]);
+
+            for (let x = 0; x < this.width; x += 1) {
+                this.drawableGrid[y].push(null);
+            }
+        }
 
         // the base background image without any custom walls or tiles applied
         this.backgroundImage = this.game.images[`/rooms/${this.name}.png`];
@@ -434,38 +496,27 @@ class Room {
             return;
         }
 
-        const drawable = [
-            {
-                foreground: true,
-                y: this.exit.y,
-                draw: () => {
-                    this.drawForeground();
+        const entitiesDrawn = new Set();
+
+        for (let y = 0; y < this.height; y += 1) {
+            for (let x = 0; x < this.width; x += 1) {
+                const entity = this.drawableGrid[y][x];
+
+                if (!entity || entitiesDrawn.has(entity)) {
+                    continue;
                 }
-            },
-            ...this.characters.values(),
-            ...this.objects.values()
-        ].sort((a, b) => {
-            // TODO also sort by x
-            const aY = a.y;
-            const bY = b.toY === a.y ? b.toY : b.y;
 
-            if (aY === bY) {
-                return a.foreground ? 1 : -1;
+                entitiesDrawn.add(entity);
+                entity.draw();
+
+                if (
+                    x < this.width &&
+                    this.drawableGrid[y][x + 1] &&
+                    entitiesDrawn.has(this.drawableGrid[y][x + 1])
+                ) {
+                    this.drawableGrid[y][x + 1].draw();
+                }
             }
-
-            if (aY > bY) {
-                return 1;
-            }
-
-            if (aY < bY) {
-                return -1;
-            }
-
-            return 0;
-        });
-
-        for (const entity of drawable) {
-            entity.draw();
         }
     }
 
