@@ -42,17 +42,6 @@ class Settings {
     }
 
     onClose() {
-        if (this.oldRoomName !== this.room.name) {
-            this.changeRoomType(this.oldRoomName);
-        }
-
-        if (this.oldRoomTile !== this.room.tile) {
-            this.changeFloorType(this.oldRoomTile);
-        }
-
-        if (this.oldRoomWall !== this.room.wall) {
-            this.changeWallType(this.oldRoomWall);
-        }
 
         this.destroy();
     }
@@ -225,6 +214,7 @@ class Settings {
             this.game.actionBar.state.destroy();
         }
 
+        this.oldDrawable = [...this.room.drawableGrid];
         this.oldRoomName = this.room.name;
         this.oldRoomTile = this.room.tile;
         this.oldRoomWall = this.room.wall;
@@ -243,6 +233,25 @@ class Settings {
 
     destroy() {
         this.open = false;
+
+        if (this.room) {
+            if (this.oldRoomName !== this.room.name) {
+                this.changeRoomType(this.oldRoomName);
+            }
+
+            if (this.oldRoomTile !== this.room.tile) {
+                this.changeFloorType(this.oldRoomTile);
+            }
+
+            if (this.oldRoomWall !== this.room.wall) {
+                this.changeWallType(this.oldRoomWall);
+            }
+
+            this.room.drawableGrid = this.oldDrawable;
+
+            this.room = null;
+        }
+
 
         this.clearRooms();
 

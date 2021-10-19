@@ -123,6 +123,15 @@ class Game extends EventEmitter {
                 case 'leave-room':
                     this.changeState('navigation', { isEntry: true });
                     break;
+                case 'inventory':
+                    this.inventory.items = message.items;
+
+                    console.log(this.inventory.items);
+
+                    if (this.inventory.open) {
+                        this.inventory.updateInventory();
+                    }
+                    break;
             }
         });
 
@@ -134,8 +143,9 @@ class Game extends EventEmitter {
         });
 
         this.container.addEventListener('mousedown', (event) => {
-            // TODO check left click
-            this.mouseDown = true;
+            if (event.button === 0) {
+                this.mouseDown = true;
+            }
         });
 
         window.addEventListener('mouseup', () => {
@@ -149,9 +159,9 @@ class Game extends EventEmitter {
 
     // preload image and JSON assets
     load() {
-        let loaded = 0;
-
         return new Promise((resolve, reject) => {
+            let loaded = 0;
+
             for (const image of PRELOAD_IMAGES) {
                 const img = new Image();
 
@@ -251,6 +261,7 @@ class Game extends EventEmitter {
         }
 
         this.state.update();
+
         setTimeout(this.boundUpdate, Math.floor(this.frameMs));
     }
 

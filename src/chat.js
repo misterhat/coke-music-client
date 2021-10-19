@@ -20,7 +20,7 @@ class Chat {
 
     onChat(event) {
         if (event.key === 'Enter') {
-            const message = this.input.value.trim();
+            let message = this.input.value.trim();
 
             this.input.value = '';
 
@@ -28,7 +28,19 @@ class Chat {
                 return;
             }
 
-            this.game.write({ type: 'chat', message });
+            if (/^::/i.test(message)) {
+                message = message.replace('::', '');
+
+                const split = message.split(' ');
+
+                this.game.write({
+                    type: 'command',
+                    command: split[0],
+                    args: split.slice(1)
+                });
+            } else {
+                this.game.write({ type: 'chat', message });
+            }
         }
     }
 

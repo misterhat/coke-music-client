@@ -1,6 +1,7 @@
 const Character = require('./character');
 const rooms = require('coke-music-data/rooms.json');
 const { createCanvas, cutPolygon, shadeImage } = require('./draw');
+const GameObject = require('./game-object');
 
 const TILE_WIDTH = 70;
 const TILE_HEIGHT = 36;
@@ -38,6 +39,7 @@ class Room {
         this.boundOnMessage = this.onMessage.bind(this);
         this.boundOnTab = this.onTab.bind(this);
         this.boundOnSettings = this.onSettings.bind(this);
+        this.boundOnCancel = this.onCancel.bind(this);
     }
 
     addCharacter(character) {
@@ -51,12 +53,14 @@ class Room {
         }
 
         this.drawableGrid[character.y][character.x] = null;
+
         this.characters.delete(character.id);
     }
 
     moveCharacter(character, x, y) {
         this.drawableGrid[character.y][character.x] = null;
         this.drawableGrid[y][x] = character;
+
         character.move(x, y);
     }
 
@@ -142,6 +146,12 @@ class Room {
             this.game.settings.destroy();
         } else {
             this.game.settings.init();
+        }
+    }
+
+    onCancel(event) {
+        if (event.key === 'Escape') {
+            this.activeObject = null;
         }
     }
 
@@ -361,6 +371,7 @@ class Room {
         this.game.navigation.destroy();
         this.game.chat.init();
         this.game.actionBar.init();
+        //this.game.settings.init();
 
         this.game.mouseDown = false;
 
@@ -374,8 +385,11 @@ class Room {
             name,
             characters,
             wall,
-            tile
+            tile,
+            objects
         } = properties;
+
+        console.log('room objects', objects);
 
         this.id = id;
         this.ownerID = ownerID;
@@ -405,13 +419,25 @@ class Room {
             character.y = y;
             character.id = id;
 
-            this.characters.set(id, character);
+            this.addCharacter(character);
+        }
+
+        for (const { name, x, y, angle } of objects) {
+            const object = new GameObject(this.game, this, { name });
+
+            object.x = x;
+            object.y = y;
+            object.angle = angle;
+
+            this.addObject(object);
         }
 
         this.drawRoom();
 
         this.roomInfoName.textContent = studio;
         this.roomInfoOwner.textContent = ownerName;
+
+        window.addEventListener('keyup', this.boundOnCancel);
 
         if (this.ownerID === this.game.characterID) {
             this.settingsButton.addEventListener('click', this.boundOnSettings);
@@ -470,6 +496,14 @@ class Room {
             if (this.activeObject) {
                 this.activeObject.edit = false;
                 this.addObject(this.activeObject);
+
+                this.game.write({
+                    type: 'add-object',
+                    name: this.activeObject.name,
+                    x: this.activeObject.x,
+                    y: this.activeObject.y
+                });
+
                 this.activeObject = null;
             } else {
                 this.game.write({ type: 'walk', x: isoX, y: isoY });
@@ -541,6 +575,7 @@ class Room {
         this.game.removeListener('message', this.boundOnMessage);
         window.removeEventListener('keypress', this.boundOnTab);
         this.settingsButton.removeEventListener('click', this.boundOnSettings);
+        window.removeEventListener('keyup', this.boundOnCancel);
 
         this.roomInfo.style.display = 'none';
         this.settingsButton.style.display = 'none';
