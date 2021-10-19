@@ -364,6 +364,7 @@ h6 {
     position: absolute;
     width: 238px;
     opacity: 0.75;
+    z-index: 2;
 }
 
 .coke-music-inventory:hover {
@@ -480,6 +481,10 @@ h6 {
     z-index: 2;
 }
 
+.coke-music-toggle-settings {
+    display: none;
+}
+
 .coke-music-setting-types {
     margin: 4px;
     height: 96px;
@@ -503,11 +508,35 @@ h6 {
 }
 
 .coke-music-setting-type-selected {
-    /*border: 2px solid #ad7a4b;*/
     border: 2px solid #f00;
 }
 
 .coke-music-setting-type:hover {
     transform: scale(1.2);
     cursor: pointer;
+}
+
+.coke-music-object-settings {
+    bottom: 64px;
+    display: none;
+    position: absolute;
+    right: 38px;
+    text-align: right;
+}
+
+.coke-music-pedestal {
+    background-image: url(/assets/pedestal.png);
+    width: 56px;
+    height: 32px;
+    float: right;
+    text-align: center;
+}
+
+.coke-music-pedestal-item {
+    position: relative;
+    bottom: 12px;
+}
+
+.coke-music-object-name {
+    font-size: 10px;
 }

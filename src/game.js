@@ -4,6 +4,7 @@ const Entry = require('./entry');
 const Inventory = require('./inventory');
 const Login = require('./login');
 const Navigation = require('./navigation');
+const ObjectSettings = require('./object-settings');
 const Register = require('./register');
 const Room = require('./room');
 const Settings = require('./settings');
@@ -36,13 +37,17 @@ const PRELOAD_IMAGES = [
 ];
 
 PRELOAD_IMAGES.push(...Object.keys(rooms).map((name) => `/rooms/${name}.png`));
-PRELOAD_IMAGES.push(...Object.keys(furniture).map((name) => `/furniture/${name}.png`));
-PRELOAD_IMAGES.push(...tiles.map(({ file } ) => `/tiles/${file}.png`));
+
+PRELOAD_IMAGES.push(...tiles.map(({ file }) => `/tiles/${file}.png`));
 
 for (const { file } of walls) {
     PRELOAD_IMAGES.push(`/walls/${file}_left.png`);
     PRELOAD_IMAGES.push(`/walls/${file}_right.png`);
 }
+
+PRELOAD_IMAGES.push(
+    ...Object.keys(furniture).map((name) => `/furniture/${name}.png`)
+);
 
 function getMousePosition(canvas, e) {
     const boundingRect = canvas.getBoundingClientRect();
@@ -96,6 +101,7 @@ class Game extends EventEmitter {
         this.inventory = new Inventory(this);
         this.actionBar = new ActionBar(this);
         this.settings = new Settings(this);
+        this.objectSettings = new ObjectSettings(this);
 
         this.socket = null;
 

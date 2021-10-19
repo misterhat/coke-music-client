@@ -34,7 +34,7 @@ class Room {
         // used for depth sorting
         this.drawableGrid = [];
 
-        this.activeObject = null;
+        this.movingObject = null;
 
         this.boundOnMessage = this.onMessage.bind(this);
         this.boundOnTab = this.onTab.bind(this);
@@ -52,15 +52,14 @@ class Room {
             return;
         }
 
+        character.resetDrawOffset();
+
         this.drawableGrid[character.y][character.x] = null;
 
         this.characters.delete(character.id);
     }
 
     moveCharacter(character, x, y) {
-        this.drawableGrid[character.y][character.x] = null;
-        this.drawableGrid[y][x] = character;
-
         character.move(x, y);
     }
 
@@ -69,19 +68,36 @@ class Room {
             return;
         }
 
-        const tileWidth =
-            object.angle <= 1 ? object.tileWidth : object.tileHeight;
-
-        const tileHeight =
-            object.angle <= 1 ? object.tileHeight : object.tileWidth;
-
-        for (let y = object.y; y < object.y + tileHeight; y += 1) {
-            for (let x = object.x; x < object.x + tileWidth; x += 1) {
+        for (let y = object.y; y < object.y + object.getTileHeight(); y += 1) {
+            for (
+                let x = object.x;
+                x < object.x + object.getTileWidth();
+                x += 1
+            ) {
                 this.drawableGrid[y][x] = object;
             }
         }
 
         this.objects.add(object);
+    }
+
+    removeObject(object) {
+        for (let y = object.y; y < object.y + object.getTileHeight(); y += 1) {
+            for (
+                let x = object.x;
+                x < object.x + object.getTileWidth();
+                x += 1
+            ) {
+                this.drawableGrid[y][x] = null;
+            }
+        }
+
+        this.objects.delete(object);
+    }
+
+    moveObject(object) {
+        object.edit = true;
+        this.movingObject = object;
     }
 
     onMessage(message) {
@@ -151,7 +167,7 @@ class Room {
 
     onCancel(event) {
         if (event.key === 'Escape') {
-            this.activeObject = null;
+            this.movingObject = null;
         }
     }
 
@@ -389,8 +405,6 @@ class Room {
             objects
         } = properties;
 
-        console.log('room objects', objects);
-
         this.id = id;
         this.ownerID = ownerID;
         this.ownerName = ownerName;
@@ -411,10 +425,11 @@ class Room {
         this.game.on('message', this.boundOnMessage);
         window.addEventListener('keypress', this.boundOnTab);
 
-        for (const { username, id, x, y } of characters) {
+        for (const { username, id, angle, x, y } of characters) {
             const character = new Character(this.game, this, {});
 
             character.username = username;
+            character.angle = angle;
             character.x = x;
             character.y = y;
             character.id = id;
@@ -478,33 +493,47 @@ class Room {
             return;
         }
 
-        if (this.activeObject) {
-            this.activeObject.x = isoX;
-            this.activeObject.y = isoY;
+        if (this.movingObject) {
+            this.movingObject.x = isoX;
+            this.movingObject.y = isoY;
 
-            this.activeObject.update();
+            this.movingObject.update();
         }
 
         const { x: tileX, y: tileY } = this.isoToCoordinate(isoX, isoY);
 
+        this.tileIsoX = isoX;
+        this.tileIsoY = isoY;
         this.tileSelectX = tileX;
         this.tileSelectY = tileY;
 
         if (this.game.mouseDown) {
             this.game.mouseDown = false;
 
-            if (this.activeObject) {
-                this.activeObject.edit = false;
-                this.addObject(this.activeObject);
+            const tileEntity = this.drawableGrid[isoY][isoX];
+
+            if (tileEntity && tileEntity.constructor.name === 'GameObject') {
+                this.movingObject = null;
+                this.game.objectSettings.init({ object: tileEntity });
+
+                return;
+            }
+
+            this.game.objectSettings.destroy();
+
+            if (this.movingObject) {
+                this.movingObject.edit = false;
+
+                this.addObject(this.movingObject);
 
                 this.game.write({
                     type: 'add-object',
-                    name: this.activeObject.name,
-                    x: this.activeObject.x,
-                    y: this.activeObject.y
+                    name: this.movingObject.name,
+                    x: this.movingObject.x,
+                    y: this.movingObject.y
                 });
 
-                this.activeObject = null;
+                this.movingObject = null;
             } else {
                 this.game.write({ type: 'walk', x: isoX, y: isoY });
             }
@@ -526,6 +555,13 @@ class Room {
                 this.tileSelectX - 2,
                 this.tileSelectY - 2
             );
+
+            if (
+                this.tileIsoX === this.exit.x &&
+                this.tileIsoY === this.exit.y
+            ) {
+                this.drawForeground();
+            }
         }
 
         // don't draw entities while settings is open
@@ -560,8 +596,8 @@ class Room {
             }
         }
 
-        if (this.activeObject) {
-            this.activeObject.draw();
+        if (this.movingObject) {
+            this.movingObject.draw();
         }
     }
 

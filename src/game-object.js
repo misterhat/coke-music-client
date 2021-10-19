@@ -21,6 +21,18 @@ class GameObject {
         this.drawY = 0;
     }
 
+    getTileWidth() {
+        return this.angle <= 1 ? this.tileWidth : this.tileHeight;
+    }
+
+    getTileHeight() {
+        return this.angle <= 1 ? this.tileHeight : this.tileWidth;
+    }
+
+    rotate() {
+        this.angle = (this.angle + 1) % this.angles;
+    }
+
     update() {
         const isoX = this.x;
         const isoY = this.y + (this.angle > 1 ? 1 : 0);

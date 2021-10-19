@@ -70,9 +70,7 @@ class Inventory {
                     this.items[index]
                 );
 
-                object.edit = true;
-
-                room.activeObject = object;
+                room.moveObject(object);
 
                 this.game.mouseDown = false;
             };

@@ -579,8 +579,12 @@ class Character {
     // move the character to their absolute position and reset the draw offset
     // (used in animation)
     resetDrawOffset() {
+        this.room.drawableGrid[this.y][this.x] = null;
+
         this.x = this.toX;
         this.y = this.toY;
+
+        this.room.drawableGrid[this.y][this.x] = this;
 
         this.drawOffsetX = 0;
         this.drawOffsetY = 0;
@@ -588,6 +592,7 @@ class Character {
         this.toX = -1;
         this.toY = -1;
 
+        //console.log(this.room.drawableGrid);
         //this.walkIndex = -1;
     }
 
