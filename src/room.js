@@ -60,6 +60,8 @@ class Room {
     }
 
     moveCharacter(character, x, y) {
+        //this.drawableGrid[character.y][character.x] = null;
+        //this.drawableGrid[y][x] = character;
         character.move(x, y);
     }
 

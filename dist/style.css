@@ -162,6 +162,68 @@ h6 {
     width: 314px;
 }
 
+.coke-music-appearance {
+    /*display: block;*/
+    width: 328px;
+    color: #efefef;
+    text-shadow: #000 1px 1px;
+}
+
+.coke-music-appearance-character {
+    width: 70px;
+    height: 126px;
+    /*background-color: #f0f;*/
+    margin: 8px auto 8px auto;
+}
+
+.coke-music-appearance-button {
+    border: 3px solid #eedbc6;
+    border-radius: 8px;
+    position: relative;
+    width: 102px;
+    position: absolute;
+    height: 52px;
+    box-sizing: border-box;
+    padding-top: 6px;
+}
+
+.coke-music-appearance-button .coke-music-arrow {
+    position: absolute;
+    top: 20px;
+}
+
+.coke-music-appearance .coke-music-arrow-next {
+    right: 4px;
+}
+
+.coke-music-appearance .coke-music-arrow-previous {
+    left: 4px;
+}
+
+.coke-music-face-button {
+    left: 106px;
+}
+
+.coke-music-hair-button {
+    left: 12px;
+    top: 94px;
+}
+
+.coke-music-shirt-button {
+    left: 12px;
+    top: 154px;
+}
+
+.coke-music-pants-button {
+    right: 12px;
+    top: 94px;
+}
+
+.coke-music-shoes-button {
+    right: 12px;
+    top: 154px;
+}
+
 /* bottom status bar */
 
 .coke-music-status {
@@ -457,7 +519,7 @@ h6 {
     border: 0;
     padding: 0;
     position: relative;
-    top: -4px;
+    top: -4px; /* TODO bottom: 4px? */
 }
 
 .coke-music-arrow-previous {
@@ -539,4 +601,56 @@ h6 {
 
 .coke-music-object-name {
     font-size: 10px;
+}
+
+.coke-music-colour-button {
+    background-color: #f0f;
+    border-radius: 4px;
+    border: 1px solid #000;
+    cursor: pointer;
+    display: block;
+    height: 16px;
+    margin: 2px auto 0 auto;
+    outline: 0;
+    padding: 0;
+    width: 16px;
+}
+
+.coke-music-colour-button::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+
+.coke-music-colour-button::-webkit-color-swatch {
+    border: none;
+}
+
+.coke-music-slider {
+    -webkit-appearance: none;
+    /*background: transparent;*/
+    background-color: #eedbc6;
+    height: 4px;
+    margin: 0;
+    box-sizing: border-box;
+    position: relative;
+    width: 120px;
+    bottom: 2px;
+}
+
+.coke-music-slider::-moz-range-thumb, .coke-music-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    background-color: #efefef;
+    cursor: pointer;
+    border-radius: 8px;
+    border: 1px solid #000;
+    margin: 0;
+}
+
+.coke-music-radio {
+    display: inline-block;
+    margin: 0;
+    position: relative;
+    top: 4px;
+    height: 16px;
 }

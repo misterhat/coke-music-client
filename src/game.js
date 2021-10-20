@@ -13,6 +13,7 @@ const rooms = require('coke-music-data/rooms.json');
 const tiles = require('coke-music-data/tiles.json');
 const walls = require('coke-music-data/walls.json');
 const { EventEmitter } = require('events');
+const Appearance = require('./appearance');
 
 const WIDTH = 800;
 const HEIGHT = 600;
@@ -31,6 +32,8 @@ const PRELOAD_IMAGES = [
     '/character/arms.png',
     '/character/shirts.png',
     '/character/sleeves.png',
+    '/character/pants.png',
+    '/character/shoes.png',
     '/character/shadow.png',
 
     '/message_name.png'
@@ -102,6 +105,7 @@ class Game extends EventEmitter {
         this.actionBar = new ActionBar(this);
         this.settings = new Settings(this);
         this.objectSettings = new ObjectSettings(this);
+        this.appearance = new Appearance(this);
 
         this.socket = null;
 
@@ -256,6 +260,9 @@ class Game extends EventEmitter {
         this.container.appendChild(this.canvas);
 
         this.changeState('login');
+
+        // TODO remove
+        this.appearance.init();
 
         this.update();
         this.draw();
