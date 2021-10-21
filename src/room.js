@@ -2,6 +2,7 @@ const Character = require('./character');
 const rooms = require('coke-music-data/rooms.json');
 const { createCanvas, cutPolygon, shadeImage } = require('./draw');
 const GameObject = require('./game-object');
+const Rug = require('./rug');
 
 const TILE_WIDTH = 70;
 const TILE_HEIGHT = 36;
@@ -14,7 +15,7 @@ class Room {
         this.tileHeight = TILE_HEIGHT;
 
         this.objects = new Set();
-        this.wallObjects = new Set();
+        this.rugs = new Set();
         this.characters = new Map();
 
         // cartesian coordinates of where to draw tileSelectImage
@@ -100,6 +101,10 @@ class Room {
     moveObject(object) {
         object.edit = true;
         this.movingObject = object;
+    }
+
+    addRug(rug) {
+        this.rugs.add(rug);
     }
 
     onMessage(message) {
@@ -260,6 +265,12 @@ class Room {
         }
     }
 
+    drawRugs() {
+        for (const rug of this.rugs.values()) {
+            rug.draw();
+        }
+    }
+
     drawWalls() {
         if (!this.wall) {
             return;
@@ -330,10 +341,12 @@ class Room {
         );
     }
 
+    // prepareRoom
     drawRoom() {
         this.roomContext.drawImage(this.backgroundImage, 0, 0);
 
         this.drawTiles();
+        //this.drawRugs();
         this.drawWalls();
         this.clipForeground();
     }
@@ -412,7 +425,8 @@ class Room {
             characters,
             wall,
             tile,
-            objects
+            objects,
+            rugs
         } = properties;
 
         this.id = id;
@@ -450,6 +464,15 @@ class Room {
             this.addObject(object);
         }
 
+        for (const { name, x, y } of rugs) {
+            const rug = new Rug(this.game, this, { name });
+
+            rug.x = x;
+            rug.y = y;
+
+            this.addRug(rug);
+        }
+
         this.drawRoom();
 
         this.roomInfoName.textContent = studio;
@@ -476,6 +499,10 @@ class Room {
 
         for (const object of this.objects.values()) {
             object.update();
+        }
+
+        for (const rug of this.rugs.values()) {
+            rug.update();
         }
 
         if (this.game.isPanelOpen()) {
@@ -529,14 +556,25 @@ class Room {
             if (this.movingObject) {
                 this.movingObject.edit = false;
 
-                this.addObject(this.movingObject);
+                if (this.movingObject.constructor.name === 'GameObject') {
+                    this.addObject(this.movingObject);
 
-                this.game.write({
-                    type: 'add-object',
-                    name: this.movingObject.name,
-                    x: this.movingObject.x,
-                    y: this.movingObject.y
-                });
+                    this.game.write({
+                        type: 'add-object',
+                        name: this.movingObject.name,
+                        x: this.movingObject.x,
+                        y: this.movingObject.y
+                    });
+                } else if (this.movingObject.constructor.name === 'Rug') {
+                    this.addRug(this.movingObject);
+
+                    this.game.write({
+                        type: 'add-rug',
+                        name: this.movingObject.name,
+                        x: this.movingObject.x,
+                        y: this.movingObject.y
+                    });
+                }
 
                 this.movingObject = null;
             } else {
@@ -553,6 +591,8 @@ class Room {
             this.backgroundOffsetX,
             this.backgroundOffsetY
         );
+
+        this.drawRugs();
 
         if (this.isTileSelected()) {
             context.drawImage(

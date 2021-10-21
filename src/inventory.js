@@ -1,5 +1,7 @@
 const GameObject = require('./game-object');
 const furniture = require('coke-music-data/furniture.json');
+const rugs = require('coke-music-data/rugs.json');
+const Rug = require('./rug');
 
 class Inventory {
     constructor(game) {
@@ -25,10 +27,7 @@ class Inventory {
         this.dragging = false;
 
         // [ { type, name } ]
-        this.items = [
-            { type: 'furniture', name: 'northern_minibar' },
-            { type: 'furniture', name: 'coke_couch' }
-        ];
+        this.items = [];
 
         this.boundOnMouseDown = this.onMouseDown.bind(this);
         this.boundClose = this.onClose.bind(this);
@@ -57,22 +56,33 @@ class Inventory {
 
             itemDiv.className = 'coke-music-inventory-item';
             itemDiv.style.backgroundImage = `url(/assets/furniture/icons/${item.name}.png)`;
-            itemDiv.title = furniture[item.name].title;
+
+            if (item.type === 'furniture') {
+                itemDiv.title = furniture[item.name].title;
+            } else if (item.type === 'rugs') {
+                itemDiv.title = rugs[item.name].title;
+            }
 
             itemDiv.onmousedown = (event) => {
                 event.preventDefault();
 
+                this.game.mouseDown = false;
+
                 const { room } = this.game.states;
 
-                const object = new GameObject(
-                    this.game,
-                    room,
-                    this.items[index]
-                );
+                if (item.type === 'furniture') {
+                    const object = new GameObject(
+                        this.game,
+                        room,
+                        this.items[index]
+                    );
 
-                room.moveObject(object);
+                    room.moveObject(object);
+                } else if (item.type === 'rugs') {
+                    const rug = new Rug(this.game, room, this.items[index]);
 
-                this.game.mouseDown = false;
+                    room.moveObject(rug);
+                }
             };
 
             itemDiv.onmouseup = () => {

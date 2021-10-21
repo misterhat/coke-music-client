@@ -431,7 +431,7 @@ h6 {
     position: absolute;
     width: 238px;
     opacity: 0.75;
-    z-index: 2;
+    z-index: 1;
 }
 
 .coke-music-inventory:hover {

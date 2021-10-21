@@ -1,4 +1,5 @@
 const ActionBar = require('./action-bar');
+const Appearance = require('./appearance');
 const Chat = require('./chat');
 const Entry = require('./entry');
 const Inventory = require('./inventory');
@@ -10,10 +11,10 @@ const Room = require('./room');
 const Settings = require('./settings');
 const furniture = require('coke-music-data/furniture.json');
 const rooms = require('coke-music-data/rooms.json');
+const rugs = require('coke-music-data/rugs.json');
 const tiles = require('coke-music-data/tiles.json');
 const walls = require('coke-music-data/walls.json');
 const { EventEmitter } = require('events');
-const Appearance = require('./appearance');
 
 const WIDTH = 800;
 const HEIGHT = 600;
@@ -48,9 +49,10 @@ for (const { file } of walls) {
     PRELOAD_IMAGES.push(`/walls/${file}_right.png`);
 }
 
-PRELOAD_IMAGES.push(
-    ...Object.keys(furniture).map((name) => `/furniture/${name}.png`)
-);
+const furnitureImages = Object.keys(furniture);
+furnitureImages.push(...Object.keys(rugs));
+
+PRELOAD_IMAGES.push(...furnitureImages.map((name) => `/furniture/${name}.png`));
 
 function getMousePosition(canvas, e) {
     const boundingRect = canvas.getBoundingClientRect();

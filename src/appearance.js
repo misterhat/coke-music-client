@@ -68,8 +68,13 @@ class Appearance {
 
         this.saveButton = document.getElementById('coke-music-appearance-save');
 
+        this.closeButton = document.getElementById(
+            'coke-music-appearance-close'
+        );
+
         this.boundSkinColour = this.onSkinColour.bind(this);
         this.boundOnSave = this.onSave.bind(this);
+        this.boundOnClose = this.onClose.bind(this);
     }
 
     onChangeColour(element, characterProperty) {
@@ -119,6 +124,10 @@ class Appearance {
         this.destroy();
     }
 
+    onClose() {
+        this.destroy();
+    }
+
     updateCharacter() {
         this.character.generateSprites();
         this.characterContainer.style.backgroundImage = `url(${this.character.sprites.idle[2].toDataURL()})`;
@@ -160,6 +169,7 @@ class Appearance {
 
         this.skinColourRange.addEventListener('click', this.boundSkinColour);
         this.saveButton.addEventListener('click', this.boundOnSave);
+        this.closeButton.addEventListener('click', this.boundOnClose);
 
         this.updateCharacter();
         this.sync();
@@ -190,6 +200,8 @@ class Appearance {
         }
 
         this.skinColourRange.removeEventListener('click', this.boundSkinColour);
+        this.saveButton.addEventListener('click', this.boundOnSave);
+        this.closeButton.addEventListener('click', this.boundOnClose);
     }
 }
 
