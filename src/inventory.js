@@ -1,7 +1,10 @@
 const GameObject = require('./game-object');
+const Rug = require('./rug');
 const furniture = require('coke-music-data/furniture.json');
 const rugs = require('coke-music-data/rugs.json');
-const Rug = require('./rug');
+
+// max items per page
+const ITEMS_PER_PAGE = 25;
 
 class Inventory {
     constructor(game) {
@@ -9,10 +12,27 @@ class Inventory {
 
         this.container = document.getElementById('coke-music-inventory');
         this.header = document.getElementById('coke-music-inventory-header');
-        this.close = document.getElementById('coke-music-inventory-close');
+
+        this.closeButton = document.getElementById(
+            'coke-music-inventory-close'
+        );
 
         this.itemContainer = document.getElementById(
             'coke-music-inventory-items'
+        );
+
+        this.previousButton = document.getElementById(
+            'coke-music-inventory-previous'
+        );
+
+        this.nextButton = document.getElementById('coke-music-inventory-next');
+
+        this.currentPageSpan = document.getElementById(
+            'coke-music-inventory-current'
+        );
+
+        this.totalPageSpan = document.getElementById(
+            'coke-music-inventory-total'
         );
 
         // absolute position of container
@@ -29,8 +49,16 @@ class Inventory {
         // [ { type, name } ]
         this.items = [];
 
+        this.page = 0;
+
         this.boundOnMouseDown = this.onMouseDown.bind(this);
-        this.boundClose = this.onClose.bind(this);
+        this.boundOnClose = this.onClose.bind(this);
+        this.boundOnNext = this.onNext.bind(this);
+        this.boundOnPrevious = this.onPrevious.bind(this);
+    }
+
+    getTotalPages() {
+        return Math.ceil(this.items.length / ITEMS_PER_PAGE);
     }
 
     onMouseDown() {
@@ -44,6 +72,26 @@ class Inventory {
         this.destroy();
     }
 
+    onPrevious() {
+        if (this.page === 0) {
+            return;
+        }
+
+        this.page -= 1;
+
+        this.updateInventory();
+    }
+
+    onNext() {
+        if (this.page + 1 === this.getTotalPages()) {
+            return;
+        }
+
+        this.page += 1;
+
+        this.updateInventory();
+    }
+
     clearInventory() {
         this.itemContainer.innerHTML = '';
     }
@@ -51,7 +99,14 @@ class Inventory {
     updateInventory() {
         this.clearInventory();
 
-        for (const [index, item] of this.items.entries()) {
+        if (this.page >= this.getTotalPages()) {
+            this.page = 0;
+        }
+
+        for (const item of this.items.slice(
+            this.page * ITEMS_PER_PAGE,
+            (this.page + 1) * ITEMS_PER_PAGE
+        )) {
             const itemDiv = document.createElement('div');
 
             itemDiv.className = 'coke-music-inventory-item';
@@ -71,15 +126,11 @@ class Inventory {
                 const { room } = this.game.states;
 
                 if (item.type === 'furniture') {
-                    const object = new GameObject(
-                        this.game,
-                        room,
-                        this.items[index]
-                    );
+                    const object = new GameObject(this.game, room, item);
 
                     room.moveObject(object);
                 } else if (item.type === 'rugs') {
-                    const rug = new Rug(this.game, room, this.items[index]);
+                    const rug = new Rug(this.game, room, item);
 
                     room.moveObject(rug);
                 }
@@ -99,6 +150,9 @@ class Inventory {
 
         clearDiv.style.clear = 'both';
         this.itemContainer.appendChild(clearDiv);
+
+        this.currentPageSpan.textContent = this.page + 1;
+        this.totalPageSpan.textContent = this.getTotalPages();
     }
 
     update() {
@@ -124,14 +178,16 @@ class Inventory {
     }
 
     init() {
+        this.open = true;
+        this.dragging = false;
+
         this.header.addEventListener('mousedown', this.boundOnMouseDown);
-        this.close.addEventListener('click', this.boundClose);
+        this.closeButton.addEventListener('click', this.boundOnClose);
+        this.nextButton.addEventListener('click', this.boundOnNext);
+        this.previousButton.addEventListener('click', this.boundOnPrevious);
 
         this.container.style.left = `${this.x}px`;
         this.container.style.top = `${this.y}px`;
-
-        this.open = true;
-        this.dragging = false;
 
         this.updateInventory();
 
@@ -139,10 +195,12 @@ class Inventory {
     }
 
     destroy() {
-        this.header.removeEventListener('mousedown', this.boundOnMouseDown);
-        this.close.removeEventListener('click', this.boundClose);
-
         this.open = false;
+
+        this.header.removeEventListener('mousedown', this.boundOnMouseDown);
+        this.closeButton.removeEventListener('click', this.boundOnClose);
+        this.nextButton.removeEventListener('click', this.boundOnNext);
+        this.previousButton.removeEventListener('click', this.boundOnPrevious);
 
         this.game.actionBar.toggleSelected('inventory', false);
 
