@@ -1,4 +1,5 @@
 const AccountPanel = require('./account-panel');
+const Character = require('./character');
 
 class Login extends AccountPanel {
     constructor(game) {
@@ -32,6 +33,12 @@ class Login extends AccountPanel {
         }
 
         this.game.characterID = message.id;
+
+        this.game.appearance.character = new Character(
+            this.game,
+            null,
+            message
+        );
 
         this.game.changeState('entry');
     }

@@ -1,5 +1,5 @@
 const { createCanvas, colourizeImage } = require('./draw');
-const { cssColor } = require('@swiftcarrot/color-fns');
+const { cssColor, hex2rgb } = require('@swiftcarrot/color-fns');
 
 // size of base head sprite in spritesheet
 const HEAD_WIDTH = 30;
@@ -198,47 +198,33 @@ const DRAW_OFFSET_Y = 88;
 
 // ne, e, se, s, n, [sw, w nw]
 
+// convert server-sized integers to { r, g, b } colours
+function intToRGB(integer) {
+    const hex = `#${integer.toString(16).padStart(6, '0')}`;
+    return hex2rgb(hex);
+}
+
 class Character {
-    constructor(game, room, appearance) {
+    constructor(game, room, data) {
         this.game = game;
         this.room = room;
 
+        this.username = data.username;
+        this.id = data.id;
+
         // isometric position
-        this.x = 0;
-        this.y = 0;
+        this.x = data.x;
+        this.y = data.y;
 
         this.drawX = 0;
         this.drawY = 0;
 
         this.isFemale = false;
 
-        this.angle = 3;
-        this.headIndex = 0;
-        this.eyeIndex = 5;
-        this.eyeSubIndex = 0;
-        this.faceIndex = 2;
-        this.faceSubIndex = 0;
-        this.hairIndex = 5;
-        this.eyeIndex = 1;
-        this.eyeSubIndex = 0;
-        this.hatIndex = -1;
-        //this.bodyIndex = 0;
-        this.shirtIndex = 0;
-        this.sleeveIndex = 0;
-        this.pantsIndex = 0;
-        this.shoesIndex = 0;
+        this.angle = data.angle || 0;
         this.walkIndex = -1;
 
-        this.skinTone = 0.15;
-
-        this.hairColour = cssColor('#ff0000');
-        this.eyeColour = cssColor('#ffffff');
-        this.shirtColour = cssColor('#ff00ff');
-        this.pantsColour = cssColor('#ff00ff');
-        this.shoesColour = cssColor('#ff00ff');
-        //this.hatColour = cssColor('#ff0000');
-
-        this.generateSprites();
+        this.updateAppearance(data);
 
         // used to drag the sprite in animation
         this.toDrawX = 0;
@@ -326,7 +312,7 @@ class Character {
                 HEAD_HEIGHT
             );
 
-            colourizeImage(eyeSprite, this.eyeColour);
+            //colourizeImage(eyeSprite, this.eyeColour);
 
             headContext.drawImage(eyeSprite, HEAD_OFFSET_X, HEAD_OFFSET_Y);
         }
@@ -411,6 +397,29 @@ class Character {
 
         bodyContext.globalCompositeOperation = 'source-over';
         bodyContext.globalAlpha = 1;
+
+        if (this.pantsIndex !== -1) {
+            const { canvas: pantsCanvas, context: pantsContext } = createCanvas(
+                BODY_WIDTH,
+                BODY_HEIGHT
+            );
+
+            pantsContext.drawImage(
+                this.game.images['/character/pants.png'],
+                angle * BODY_WIDTH,
+                this.pantsIndex * BODY_HEIGHT * 6 + index * BODY_HEIGHT,
+                BODY_WIDTH,
+                BODY_HEIGHT,
+                0,
+                0,
+                BODY_WIDTH,
+                BODY_HEIGHT
+            );
+
+            colourizeImage(pantsCanvas, this.pantsColour);
+
+            bodyContext.drawImage(pantsCanvas, 0, 0);
+        }
 
         // shirt
         if (this.shirtIndex !== -1) {
@@ -529,6 +538,7 @@ class Character {
             );
         }
 
+        // shirt
         if (this.shoesIndex !== -1) {
             const { canvas: shoesCanvas, context: shoesContext } = createCanvas(
                 70,
@@ -550,29 +560,6 @@ class Character {
             colourizeImage(shoesCanvas, this.shoesColour);
 
             bodyContext.drawImage(shoesCanvas, 0, 0);
-        }
-
-        if (this.pantsIndex !== -1) {
-            const { canvas: pantsCanvas, context: pantsContext } = createCanvas(
-                BODY_WIDTH,
-                BODY_HEIGHT
-            );
-
-            pantsContext.drawImage(
-                this.game.images['/character/pants.png'],
-                angle * BODY_WIDTH,
-                (this.pantsIndex * BODY_HEIGHT * 6) + (index * BODY_HEIGHT),
-                BODY_WIDTH,
-                BODY_HEIGHT,
-                0,
-                0,
-                BODY_WIDTH,
-                BODY_HEIGHT
-            );
-
-            colourizeImage(pantsCanvas, this.pantsColour);
-
-            bodyContext.drawImage(pantsCanvas, 0, 0);
         }
 
         return bodySprite;
@@ -632,6 +619,33 @@ class Character {
         }
 
         this.image = this.sprites.idle[3];
+    }
+
+    updateAppearance(data) {
+        this.headIndex = 0;
+        this.eyeIndex = 5;
+        this.eyeSubIndex = 0;
+        this.faceIndex = 2;
+        this.faceSubIndex = 0;
+        this.hairIndex = data.hairIndex;
+        this.eyeIndex = 1;
+        this.eyeSubIndex = 0;
+        this.hatIndex = -1;
+        //this.bodyIndex = 0;
+        this.shirtIndex = data.shirtIndex;
+        this.sleeveIndex = 0;
+        this.pantsIndex = data.pantsIndex;
+        this.shoesIndex = data.shoesIndex;
+        this.skinTone = (data.skinTone / 10) * 0.75;
+
+        this.hairColour = intToRGB(data.hairColour);
+        //this.eyeColour = '#ffffff';
+        this.shirtColour = intToRGB(data.shirtColour);
+        this.pantsColour = intToRGB(data.pantsColour);
+        this.shoesColour = intToRGB(data.shoesColour);
+        //this.hatColour = cssColor('#ff0000');
+
+        this.generateSprites();
     }
 
     // move the character to their absolute position and reset the draw offset

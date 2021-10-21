@@ -105,14 +105,11 @@ class Room {
     onMessage(message) {
         switch (message.type) {
             case 'add-character': {
-                const character = new Character(this.game, this, {});
-                character.username = message.username;
-                character.x = message.x;
-                character.y = message.y;
-                character.id = message.id;
+                const character = new Character(this.game, this, message);
                 this.addCharacter(character);
                 break;
             }
+
             case 'remove-character': {
                 if (message.id === this.game.characterID) {
                     this.game.changeState('entry');
@@ -123,16 +120,27 @@ class Room {
                 this.removeCharacter(character);
                 break;
             }
+
             case 'move-character': {
                 const character = this.characters.get(message.id);
 
-                if (!character) {
-                    break;
+                if (character) {
+                    this.moveCharacter(character, message.x, message.y);
                 }
-
-                this.moveCharacter(character, message.x, message.y);
                 break;
             }
+
+            case 'character-appearance': {
+                const character = this.characters.get(message.id);
+
+                console.log(message);
+
+                if (character) {
+                    character.updateAppearance(message);
+                }
+                break;
+            }
+
             case 'chat': {
                 const character = this.characters.get(message.id);
 
@@ -427,15 +435,8 @@ class Room {
         this.game.on('message', this.boundOnMessage);
         window.addEventListener('keypress', this.boundOnTab);
 
-        for (const { username, id, angle, x, y } of characters) {
-            const character = new Character(this.game, this, {});
-
-            character.username = username;
-            character.angle = angle;
-            character.x = x;
-            character.y = y;
-            character.id = id;
-
+        for (const data of characters) {
+            const character = new Character(this.game, this, data);
             this.addCharacter(character);
         }
 
@@ -460,6 +461,8 @@ class Room {
             this.settingsButton.addEventListener('click', this.boundOnSettings);
 
             this.settingsButton.style.display = 'inline';
+        } else {
+            this.settingsButton.style.display = 'none';
         }
 
         this.roomInfo.style.display = 'block';

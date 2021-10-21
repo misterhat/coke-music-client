@@ -120,7 +120,10 @@ class Game extends EventEmitter {
 
     isPanelOpen() {
         return (
-            this.navigation.open || this.inventory.open || this.settings.open
+            this.navigation.open ||
+            this.inventory.open ||
+            this.settings.open ||
+            this.appearance.open
         );
     }
 
@@ -136,11 +139,12 @@ class Game extends EventEmitter {
                 case 'inventory':
                     this.inventory.items = message.items;
 
-                    console.log(this.inventory.items);
-
                     if (this.inventory.open) {
                         this.inventory.updateInventory();
                     }
+                    break;
+                case 'appearance':
+                    this.appearance.init();
                     break;
             }
         });
@@ -260,9 +264,6 @@ class Game extends EventEmitter {
         this.container.appendChild(this.canvas);
 
         this.changeState('login');
-
-        // TODO remove
-        this.appearance.init();
 
         this.update();
         this.draw();

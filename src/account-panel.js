@@ -25,6 +25,8 @@ class AccountPanel {
     }
 
     init() {
+        this.game.appearance.destroy();
+
         this.statusIngame.style.display = 'none';
 
         this.panel.style.display = 'block';

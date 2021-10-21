@@ -163,10 +163,15 @@ h6 {
 }
 
 .coke-music-appearance {
-    /*display: block;*/
-    width: 328px;
     color: #efefef;
+    left: 424px;
     text-shadow: #000 1px 1px;
+    top: 100px;
+    width: 314px;
+}
+
+.coke-music-appearance h2 {
+    color: #eddbc5;
 }
 
 .coke-music-appearance-character {
@@ -189,7 +194,7 @@ h6 {
 
 .coke-music-appearance-button .coke-music-arrow {
     position: absolute;
-    top: 20px;
+    top: 18px;
 }
 
 .coke-music-appearance .coke-music-arrow-next {

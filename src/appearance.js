@@ -1,5 +1,5 @@
 const Character = require('./character');
-const { cssColor } = require('@swiftcarrot/color-fns');
+const { cssColor, rgb2hex } = require('@swiftcarrot/color-fns');
 
 const BUTTONS = ['hair', 'shirt', 'pants', 'shoes'];
 
@@ -9,6 +9,11 @@ const TOTAL_INDEXES = {
     pants: 10,
     shoes: 1
 };
+
+// turn { r, g, b } into a Number for the server
+function formatColour(colour) {
+    return Number.parseInt(rgb2hex(colour.r, colour.g, colour.b).slice(1), 16);
+}
 
 class Appearance {
     constructor(game) {
@@ -61,7 +66,10 @@ class Appearance {
             'coke-music-skin-colour'
         );
 
+        this.saveButton = document.getElementById('coke-music-appearance-save');
+
         this.boundSkinColour = this.onSkinColour.bind(this);
+        this.boundOnSave = this.onSave.bind(this);
     }
 
     onChangeColour(element, characterProperty) {
@@ -70,16 +78,21 @@ class Appearance {
         this.updateCharacter();
     }
 
-    // TODO limits
-
     onPrevioustButton(type) {
-        this.character[`${type}Index`] -= 1;
+        const value = this.character[`${type}Index`];
+
+        this.character[`${type}Index`] =
+            value - 1 < 0 ? TOTAL_INDEXES[type] : value - 1;
+
         this.updateCharacter();
     }
 
     onNextButton(type) {
-        console.log('next', type);
-        this.character[`${type}Index`] += 1;
+        const value = this.character[`${type}Index`];
+
+        this.character[`${type}Index`] =
+            value + 1 > TOTAL_INDEXES[type] ? 0 : value + 1;
+
         this.updateCharacter();
     }
 
@@ -89,13 +102,44 @@ class Appearance {
         this.updateCharacter();
     }
 
+    onSave() {
+        this.game.write({
+            type: 'appearance',
+            faceIndex: 0,
+            hairIndex: this.character.hairIndex,
+            hairColour: formatColour(this.character.hairColour),
+            shirtIndex: this.character.shirtIndex,
+            shirtColour: formatColour(this.character.shirtColour),
+            pantsIndex: this.character.pantsIndex,
+            pantsColour: formatColour(this.character.pantsColour),
+            shoesIndex: this.character.shoesIndex,
+            shoesColour: formatColour(this.character.shoesColour)
+        });
+
+        this.destroy();
+    }
+
     updateCharacter() {
         this.character.generateSprites();
-        this.characterContainer.style.backgroundImage = `url(${this.character.sprites.idle[7].toDataURL()})`;
+        this.characterContainer.style.backgroundImage = `url(${this.character.sprites.idle[2].toDataURL()})`;
+    }
+
+    // update the HTML to match the character attributes
+    sync() {
+        for (const type of BUTTONS) {
+            const colourButton = this.colourButtons[type];
+            const colour = this.character[`${type}Colour`];
+
+            colourButton.value = rgb2hex(colour.r, colour.g, colour.b);
+        }
+
+        this.skinColourRange.value = Math.floor(
+            (this.character.skinTone / 0.75) * Number(this.skinColourRange.max)
+        );
     }
 
     init() {
-        this.character = new Character(this.game, null, {});
+        this.open = true;
 
         for (const type of BUTTONS) {
             this.colourButtons[type].addEventListener(
@@ -115,13 +159,17 @@ class Appearance {
         }
 
         this.skinColourRange.addEventListener('click', this.boundSkinColour);
+        this.saveButton.addEventListener('click', this.boundOnSave);
 
         this.updateCharacter();
+        this.sync();
 
         this.container.style.display = 'block';
     }
 
     destroy() {
+        this.open = false;
+
         this.container.style.display = 'none';
 
         for (const type of BUTTONS) {
