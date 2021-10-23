@@ -132,7 +132,7 @@ class Settings {
     updateFloors() {
         this.clearFloors();
 
-        for (const { name, file } of tiles) {
+        for (const { file } of tiles) {
             const floorImg = document.createElement('img');
 
             floorImg.className = 'coke-music-setting-type';
@@ -176,7 +176,7 @@ class Settings {
     updateWalls() {
         this.clearWalls();
 
-        for (const { name, file } of walls) {
+        for (const { file } of walls) {
             const wallImg = document.createElement('img');
 
             wallImg.className = 'coke-music-setting-type';
@@ -226,6 +226,8 @@ class Settings {
         this.closeButton.addEventListener('click', this.boundOnClose);
         this.saveButton.addEventListener('click', this.boundOnSave);
         this.deleteButton.addEventListener('click', this.boundOnDelete);
+
+        this.studioInput.textContent = this.room.studio;
 
         this.settingsButton.style.fontStyle = 'italic';
         this.container.style.display = 'block';

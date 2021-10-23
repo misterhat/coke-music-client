@@ -44,7 +44,7 @@ class Register extends AccountPanel {
             return;
         }
 
-        alert('registered!');
+        this.game.changeState('login');
     }
 
     async onRegisterClick() {

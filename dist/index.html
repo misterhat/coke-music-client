@@ -152,11 +152,19 @@
                 </div>
 
                 <div class="coke-music-paper" style="height: 194px">
-                    <button class="coke-music-button">
+                    <button
+                        id="coke-music-active-studios"
+                        class="coke-music-button"
+                    >
                         Show Active Studios
                     </button>
 
-                    <button class="coke-music-button">Show My Studios</button>
+                    <button
+                        id="coke-music-my-studios"
+                        class="coke-music-button"
+                    >
+                        Show My Studios
+                    </button>
 
                     <div
                         class="coke-music-table"
@@ -181,6 +189,10 @@
                         Create Studio
                     </button>
                 </div>
+
+                <button id="coke-music-logout" class="coke-music-button">
+                    Log Out
+                </button>
             </div>
 
             <!-- chat messages -->
@@ -388,6 +400,40 @@
                 </button>
                 <button id="coke-music-object-rotate" class="coke-music-button">
                     Rotate
+                </button>
+                <button id="coke-music-object-move" class="coke-music-button">
+                    Move
+                </button>
+            </div>
+
+            <!-- rug settings -->
+            <div
+                id="coke-music-rug-settings"
+                class="coke-music-object-settings"
+            >
+                <div class="coke-music-pedestal">
+                    <img
+                        id="coke-music-rug-image"
+                        class="coke-music-pedestal-item"
+                        src="/assets/furniture/icons/fur_rug.png"
+                    />
+                </div>
+
+                <div style="clear: both"></div>
+
+                <h4
+                    id="coke-music-object-name"
+                    class="coke-music-object-name"
+                ></h4>
+
+                <button id="coke-music-object-delete" class="coke-music-button">
+                    Delete
+                </button>
+                <button
+                    id="coke-music-object-pick-up"
+                    class="coke-music-button"
+                >
+                    Pick Up
                 </button>
                 <button id="coke-music-object-move" class="coke-music-button">
                     Move

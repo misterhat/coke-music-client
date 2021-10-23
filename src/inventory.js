@@ -39,6 +39,8 @@ class Inventory {
         this.x = 500;
         this.y = 184;
 
+        this.lastY = this.y;
+
         // offset when clicked with mouse
         this.offsetX = 0;
         this.offsetY = 0;
@@ -50,6 +52,8 @@ class Inventory {
         this.items = [];
 
         this.page = 0;
+
+        this.transformTimeout = null;
 
         this.boundOnMouseDown = this.onMouseDown.bind(this);
         this.boundOnClose = this.onClose.bind(this);
@@ -156,6 +160,10 @@ class Inventory {
     }
 
     update() {
+        if (this.transformTimeout) {
+            return;
+        }
+
         if (!this.game.mouseDown) {
             this.dragging = false;
             return;
@@ -186,16 +194,34 @@ class Inventory {
         this.nextButton.addEventListener('click', this.boundOnNext);
         this.previousButton.addEventListener('click', this.boundOnPrevious);
 
+        this.container.style.transition = 'top 0.5s';
         this.container.style.left = `${this.x}px`;
         this.container.style.top = `${this.y}px`;
 
+        clearTimeout(this.transformTimeout);
+
+        this.transformTimeout = setTimeout(() => {
+            this.container.style.transition = '';
+            this.transformTimeout = null;
+        }, 500);
+
         this.updateInventory();
 
-        this.container.style.display = 'block';
+        //this.container.style.display = 'block';
     }
 
     destroy() {
         this.open = false;
+
+        this.container.style.transition = 'top 0.5s';
+        this.container.style.top = '800px';
+
+        clearTimeout(this.transformTimeout);
+
+        this.transformTimeout = setTimeout(() => {
+            this.container.style.transition = '';
+            this.transformTimeout = null;
+        }, 500);
 
         this.header.removeEventListener('mousedown', this.boundOnMouseDown);
         this.closeButton.removeEventListener('click', this.boundOnClose);
@@ -204,7 +230,7 @@ class Inventory {
 
         this.game.actionBar.toggleSelected('inventory', false);
 
-        this.container.style.display = 'none';
+        //this.container.style.display = 'none';
 
         this.clearInventory();
     }

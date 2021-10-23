@@ -60,12 +60,6 @@ class Room {
         this.characters.delete(character.id);
     }
 
-    moveCharacter(character, x, y) {
-        //this.drawableGrid[character.y][character.x] = null;
-        //this.drawableGrid[y][x] = character;
-        character.move(x, y);
-    }
-
     addObject(object) {
         if (object.x === -1 || object.y === -1) {
             return;
@@ -130,15 +124,32 @@ class Room {
                 const character = this.characters.get(message.id);
 
                 if (character) {
-                    this.moveCharacter(character, message.x, message.y);
+                    character.move(message.x, message.y);
+                }
+
+                break;
+            }
+
+            case 'character-sit': {
+                const character = this.characters.get(message.id);
+
+                if (!character) {
+                    break;
+                }
+
+                character.angle = 7;
+                character.isSitting = true;
+
+                const tileEntity = this.drawableGrid[message.y][message.y];
+
+                if (tileEntity) {
+                    console.log(tileEntity);
                 }
                 break;
             }
 
             case 'character-appearance': {
                 const character = this.characters.get(message.id);
-
-                console.log(message);
 
                 if (character) {
                     character.updateAppearance(message);
@@ -157,7 +168,8 @@ class Room {
                     username: character.username,
                     message: message.message,
                     x: message.x,
-                    y: message.y
+                    y: message.y,
+                    colour: message.colour
                 });
 
                 break;
@@ -548,15 +560,23 @@ class Room {
                 this.movingObject = null;
                 this.game.objectSettings.init({ object: tileEntity });
 
-                return;
+                if (!tileEntity.sit) {
+                    return;
+                }
             }
 
-            this.game.objectSettings.destroy();
+            if ((tileEntity && !tileEntity.sit) || !tileEntity) {
+                this.game.objectSettings.destroy();
+            }
 
             if (this.movingObject) {
-                this.movingObject.edit = false;
-
                 if (this.movingObject.constructor.name === 'GameObject') {
+                    if (this.movingObject.isBlocked()) {
+                        return;
+                    }
+
+                    this.movingObject.edit = false;
+
                     this.addObject(this.movingObject);
 
                     this.game.write({
@@ -567,6 +587,8 @@ class Room {
                     });
                 } else if (this.movingObject.constructor.name === 'Rug') {
                     this.addRug(this.movingObject);
+
+                    this.movingObject.edit = false;
 
                     this.game.write({
                         type: 'add-rug',
@@ -652,6 +674,7 @@ class Room {
         this.game.inventory.destroy();
         this.game.actionBar.destroy();
         this.game.settings.destroy();
+        this.game.objectSettings.destroy();
 
         this.game.removeListener('message', this.boundOnMessage);
         window.removeEventListener('keypress', this.boundOnTab);

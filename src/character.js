@@ -1,5 +1,4 @@
-const { createCanvas, colourizeImage } = require('./draw');
-const { cssColor, hex2rgb } = require('@swiftcarrot/color-fns');
+const { createCanvas, colourizeImage, intToRGB } = require('./draw');
 
 // size of base head sprite in spritesheet
 const HEAD_WIDTH = 30;
@@ -198,12 +197,6 @@ const DRAW_OFFSET_Y = 88;
 
 // ne, e, se, s, n, [sw, w nw]
 
-// convert server-sized integers to { r, g, b } colours
-function intToRGB(integer) {
-    const hex = `#${integer.toString(16).padStart(6, '0')}`;
-    return hex2rgb(hex);
-}
-
 class Character {
     constructor(game, room, data) {
         this.game = game;
@@ -237,6 +230,8 @@ class Character {
         this.toY = -1;
 
         this.walkSpeed = 5;
+
+        this.isSitting = false;
 
         this.idleStepTimeout = null;
     }
@@ -583,7 +578,8 @@ class Character {
                 const {
                     canvas: baseSprite,
                     context: baseContext
-                } = createCanvas(62, 116);
+                } = createCanvas(82, 116);
+                // TODO stop cutting
 
                 const bodySprite = this.generateBodySprite(angle, bodyIndex);
                 const headSprite = this.generateHeadSprite(angle);
@@ -651,7 +647,9 @@ class Character {
     // move the character to their absolute position and reset the draw offset
     // (used in animation)
     resetDrawOffset() {
-        this.room.drawableGrid[this.y][this.x] = null;
+        if (this.room.drawableGrid[this.y][this.x] === this) {
+            this.room.drawableGrid[this.y][this.x] = null;
+        }
 
         this.x = this.toX;
         this.y = this.toY;
@@ -663,11 +661,17 @@ class Character {
 
         this.toX = -1;
         this.toY = -1;
-
-        //this.walkIndex = -1;
     }
 
     move(x, y) {
+        if (this.isSitting) {
+            this.isSitting = false;
+            this.toX = x;
+            this.toY = y;
+            this.resetDrawOffset();
+            return;
+        }
+
         if (this.idleStepTimeout) {
             clearTimeout(this.idleStepTimeout);
         }
@@ -720,6 +724,21 @@ class Character {
     }
 
     update() {
+        if (this.isSitting) {
+            this.image = this.sprites.sit[this.angle];
+
+            let { x: drawX, y: drawY } = this.room.isoToCoordinate(
+                this.x,
+                this.y
+            );
+
+            drawY = drawY - DRAW_OFFSET_Y;
+
+            this.drawX = drawX;
+            this.drawY = drawY;
+            return;
+        }
+
         let sprites;
 
         if (this.walkIndex !== -1) {
@@ -784,13 +803,19 @@ class Character {
     }
 
     draw() {
+        /*if (this.isSitting) {
+            return;
+        }*/
+
         const { context } = this.game;
 
-        context.drawImage(
-            this.game.images['/character/shadow.png'],
-            this.drawX,
-            this.drawY + DRAW_OFFSET_Y
-        );
+        if (!this.isSitting) {
+            context.drawImage(
+                this.game.images['/character/shadow.png'],
+                this.drawX,
+                this.drawY + DRAW_OFFSET_Y
+            );
+        }
 
         context.drawImage(this.image, this.drawX, this.drawY);
     }

@@ -1,3 +1,5 @@
+const { hex2rgb } = require('@swiftcarrot/color-fns');
+
 // TODO createCanvas -> canvas, context
 function createCanvas(width, height) {
     const canvas = document.createElement('canvas');
@@ -13,6 +15,7 @@ function createCanvas(width, height) {
 // set a polygon of an image to transparent
 function cutPolygon(context, points) {
     const path = new Path2D();
+
     path.moveTo(points[0].x, points[0].y);
 
     for (let i = 1; i < points.length; i += 1) {
@@ -117,9 +120,16 @@ function colourizeImage(canvas, colour) {
     context.putImageData(imageData, 0, 0);
 }
 
+// convert server-sized integers to { r, g, b } colours
+function intToRGB(integer) {
+    const hex = `#${integer.toString(16).padStart(6, '0')}`;
+    return hex2rgb(hex);
+}
+
 module.exports = {
     createCanvas,
     cutPolygon,
     shadeImage,
-    colourizeImage
+    colourizeImage,
+    intToRGB
 };

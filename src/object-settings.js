@@ -54,16 +54,29 @@ class ObjectSettings {
     }
 
     onRotate() {
-        this.room.removeObject(this.object);
-        this.object.rotate();
-        this.room.addObject(this.object);
+        const oldAngle = this.object.angle;
 
-        this.game.write({
-            type: 'rotate-object',
-            name: this.object.name,
-            x: this.object.x,
-            y: this.object.y
-        });
+        this.object.rotate();
+
+        if (this.object.isBlocked()) {
+            this.object.angle = oldAngle;
+        } else {
+            const newAngle = this.object.angle;
+
+            this.object.angle = oldAngle;
+            this.room.removeObject(this.object);
+
+            this.object.angle = newAngle;
+
+            this.room.addObject(this.object);
+
+            this.game.write({
+                type: 'rotate-object',
+                name: this.object.name,
+                x: this.object.x,
+                y: this.object.y
+            });
+        }
     }
 
     onMove() {}
@@ -75,6 +88,7 @@ class ObjectSettings {
 
         this.nameHeader.textContent = object.title;
         this.objectImg.src = `/assets/furniture/icons/${this.object.name}.png`;
+        this.objectImg.style.bottom = `${this.objectImg.height - 20}px`;
 
         this.deleteButton.addEventListener('click', this.boundOnDelete);
         this.pickUpButton.addEventListener('click', this.boundOnPickUp);

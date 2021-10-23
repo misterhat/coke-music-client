@@ -1,5 +1,4 @@
-const { createCanvas, colourizeImage } = require('./draw');
-const { cssColor } = require('@swiftcarrot/color-fns');
+const { createCanvas, colourizeImage, intToRGB } = require('./draw');
 
 // TODO move this
 const TILE_WIDTH = 70;
@@ -44,7 +43,7 @@ class Chat {
         }
     }
 
-    addChatMessage({ username, message, x: isoX, y: isoY }) {
+    addChatMessage({ username, message, x: isoX, y: isoY, colour }) {
         this.messageLength += 1;
 
         const messageLi = document.createElement('li');
@@ -56,7 +55,9 @@ class Chat {
 
         nameContext.drawImage(this.nameImage, 0, 0);
 
-        colourizeImage(nameCanvas, cssColor('#ff0000'));
+        console.log(colour);
+
+        colourizeImage(nameCanvas, intToRGB(colour));
 
         const nameSpan = document.createElement('span');
 

@@ -12,13 +12,19 @@ class Navigation {
 
         this.roomTable = document.getElementById('coke-music-studio-table');
         this.createButton = document.getElementById('coke-music-create-studio');
+        this.logoutButton = document.getElementById('coke-music-logout');
 
         this.open = false;
+
+        this.showActive = false;
+        this.showMine = false;
+
         this.rooms = [];
 
         this.boundOnMessage = this.onMessage.bind(this);
         this.boundOnClose = this.onClose.bind(this);
         this.boundOnCreate = this.onCreate.bind(this);
+        this.boundOnLogout = this.onLogout.bind(this);
     }
 
     onMessage(message) {
@@ -27,6 +33,7 @@ class Navigation {
         }
 
         this.rooms = message.rooms;
+
         this.clearRoomTable();
         this.updateRoomTable();
     }
@@ -37,6 +44,12 @@ class Navigation {
 
     onCreate() {
         this.game.write({ type: 'create-room' });
+    }
+
+    onLogout() {
+        if (this.game.socket) {
+            this.game.socket.close();
+        }
     }
 
     clearRoomTable() {
@@ -85,6 +98,7 @@ class Navigation {
         this.game.on('message', this.boundOnMessage);
         this.closeButton.addEventListener('click', this.boundOnClose);
         this.createButton.addEventListener('click', this.boundOnCreate);
+        this.logoutButton.addEventListener('click', this.boundOnLogout);
 
         this.clearRoomTable();
 
@@ -102,6 +116,7 @@ class Navigation {
         this.game.removeListener('message', this.boundOnMessage);
         this.closeButton.removeEventListener('click', this.boundOnClose);
         this.createButton.removeEventListener('click', this.boundOnCreate);
+        this.logoutButton.removeEventListener('click', this.boundOnLogout);
 
         this.panel.style.display = 'none';
 

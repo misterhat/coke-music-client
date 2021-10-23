@@ -17,6 +17,8 @@ class GameObject {
         this.x = -1;
         this.y = -1;
 
+        this.sitters = new Set();
+
         this.drawX = 0;
         this.drawY = 0;
     }
@@ -33,17 +35,53 @@ class GameObject {
         this.angle = (this.angle + 1) % this.angles;
     }
 
+    isBlocked() {
+        if (this.x < 0 || this.y < 0) {
+            return true;
+        }
+
+        const width = this.getTileWidth();
+        const height = this.getTileHeight();
+
+        for (let y = this.y; y < this.y + height; y += 1) {
+            if (y >= this.room.height) {
+                return true;
+            }
+
+            for (let x = this.x; x < this.x + width; x += 1) {
+                if (x >= this.room.width) {
+                    return true;
+                }
+
+                if (this.room.map[y][x]) {
+                    return true;
+                }
+
+                const tileEntity = this.room.drawableGrid[y][x];
+
+                if (
+                    tileEntity &&
+                    tileEntity !== this /*&&
+                    tileEntity.constructor.name === 'GameObject'*/
+                ) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     update() {
         const isoX = this.x;
         const isoY = this.y + (this.angle > 1 ? 1 : 0);
 
-        const { x: drawX, y: drawY } = this.room.isoToCoordinate(
-            isoX,
-            isoY
-        );
+        const { x: drawX, y: drawY } = this.room.isoToCoordinate(isoX, isoY);
 
-        this.drawX = drawX;
-        this.drawY = drawY - (this.height / 2);
+        this.drawX = drawX + this.offsetX;
+
+        this.drawY =
+            drawY - this.height + 36 + (this.angle <= 1 ? this.offsetY : 0);
     }
 
     draw() {
@@ -55,6 +93,10 @@ class GameObject {
 
         if (this.edit) {
             context.globalAlpha = 0.5;
+        }
+
+        for (const character of this.sitters) {
+            character.draw();
         }
 
         context.drawImage(

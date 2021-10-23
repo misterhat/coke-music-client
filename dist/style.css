@@ -426,11 +426,11 @@ h6 {
 
 .coke-music-inventory {
     background-image: url(/assets/inventory.png);
-    display: none;
     height: 336px;
-    position: absolute;
-    width: 238px;
     opacity: 0.75;
+    position: absolute;
+    top: 800px;
+    width: 238px;
     z-index: 1;
 }
 
@@ -518,13 +518,12 @@ h6 {
     background-color: transparent;
     background-image: url(/assets/arrow.png);
     width: 12px;
-    height: 11px;
+    height: 17px;
     background-repeat: no-repeat;
     box-sizing: border-box;
     border: 0;
     padding: 0;
     position: relative;
-    top: -4px; /* TODO bottom: 4px? */
 }
 
 .coke-music-arrow-previous {
@@ -601,7 +600,7 @@ h6 {
 
 .coke-music-pedestal-item {
     position: relative;
-    bottom: 12px;
+    /*bottom: 12px;*/
 }
 
 .coke-music-object-name {
