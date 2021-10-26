@@ -54,6 +54,10 @@ furnitureImages.push(...Object.keys(rugs));
 
 PRELOAD_IMAGES.push(...furnitureImages.map((name) => `/furniture/${name}.png`));
 
+// TODO filter by sit
+PRELOAD_IMAGES.push('/furniture/coke_couch_foreground.png');
+PRELOAD_IMAGES.push('/furniture/grunge_couch_foreground.png');
+
 function getMousePosition(canvas, e) {
     const boundingRect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / boundingRect.width;
@@ -106,7 +110,8 @@ class Game extends EventEmitter {
         this.inventory = new Inventory(this);
         this.actionBar = new ActionBar(this);
         this.settings = new Settings(this);
-        this.objectSettings = new ObjectSettings(this);
+        this.objectSettings = new ObjectSettings(this, 'object');
+        this.rugSettings = new ObjectSettings(this, 'rug');
         this.appearance = new Appearance(this);
 
         this.socket = null;
@@ -114,7 +119,7 @@ class Game extends EventEmitter {
         this.characterID = null;
 
         // milliseconds per frame
-        this.frameMs = 1000 / 30;
+        this.frameMs = Math.floor(1000 / 30);
 
         this.boundDraw = this.draw.bind(this);
         this.boundUpdate = this.update.bind(this);
@@ -272,13 +277,17 @@ class Game extends EventEmitter {
     }
 
     update() {
+        const startTime = Date.now();
+
         if (this.inventory.open) {
             this.inventory.update();
         }
 
         this.state.update();
 
-        setTimeout(this.boundUpdate, Math.floor(this.frameMs));
+        const deltaTime = Date.now() - startTime;
+
+        setTimeout(this.boundUpdate, this.frameMs - deltaTime);
     }
 
     draw() {

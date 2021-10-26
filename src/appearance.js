@@ -7,7 +7,7 @@ const TOTAL_INDEXES = {
     hair: 10, // last is bald? sure
     shirt: 21,
     pants: 10,
-    shoes: 1
+    shoes: 5
 };
 
 // turn { r, g, b } into a Number for the server

@@ -97,6 +97,23 @@ class Room {
         this.movingObject = object;
     }
 
+    cancelMoveObject() {
+        if (this.movingObject) {
+            this.movingObject.edit = false;
+
+            if (this.movingObject.oldX > -1 && this.movingObject.oldY > -1) {
+                this.movingObject.x = this.movingObject.oldX;
+                this.movingObject.y = this.movingObject.oldY;
+                this.movingObject.oldX = -1;
+                this.movingObject.oldY = -1;
+                this.addObject(this.movingObject);
+                this.movingObject.alreadyPlaced = false;
+            }
+        }
+
+        this.movingObject = null;
+    }
+
     addRug(rug) {
         this.rugs.add(rug);
     }
@@ -137,13 +154,23 @@ class Room {
                     break;
                 }
 
-                character.angle = 7;
-                character.isSitting = true;
+                if (this.drawableGrid[character.y][character.x] === character) {
+                    this.drawableGrid[character.y][character.x] = null;
+                }
 
-                const tileEntity = this.drawableGrid[message.y][message.y];
+                if (character.isSitting) {
+                    character.sitting.sitters.delete(character);
+                }
+
+                character.isSitting = true;
+                character.x = message.x;
+                character.y = message.y;
+
+                const tileEntity = this.drawableGrid[message.y][message.x];
 
                 if (tileEntity) {
-                    console.log(tileEntity);
+                    character.sitting = tileEntity;
+                    tileEntity.sitters.add(character);
                 }
                 break;
             }
@@ -174,6 +201,26 @@ class Room {
 
                 break;
             }
+
+            case 'add-object': {
+                const object = new GameObject(this.game, this, message);
+                this.addObject(object);
+                break;
+            }
+
+            case 'remove-object': {
+                for (const object of this.objects) {
+                    if (
+                        object.x === message.x &&
+                        object.y === message.y &&
+                        object.name === message.name
+                    ) {
+                        this.removeObject(object);
+                        return;
+                    }
+                }
+                break;
+            }
         }
     }
 
@@ -194,7 +241,7 @@ class Room {
 
     onCancel(event) {
         if (event.key === 'Escape') {
-            this.movingObject = null;
+            this.cancelMoveObject();
         }
     }
 
@@ -466,13 +513,8 @@ class Room {
             this.addCharacter(character);
         }
 
-        for (const { name, x, y, angle } of objects) {
-            const object = new GameObject(this.game, this, { name });
-
-            object.x = x;
-            object.y = y;
-            object.angle = angle;
-
+        for (const data of objects) {
+            const object = new GameObject(this.game, this, data);
             this.addObject(object);
         }
 
@@ -554,10 +596,30 @@ class Room {
         if (this.game.mouseDown) {
             this.game.mouseDown = false;
 
+            let selectedRug = false;
+
+            for (const rug of this.rugs) {
+                if (
+                    isoX >= rug.x &&
+                    isoX < rug.x + rug.tileWidth &&
+                    isoY >= rug.y &&
+                    isoY < rug.y + rug.tileHeight
+                ) {
+                    this.game.rugSettings.init({ object: rug });
+                    selectedRug = true;
+                    break;
+                }
+            }
+
+            if (!selectedRug) {
+                this.game.rugSettings.destroy();
+            }
+
             const tileEntity = this.drawableGrid[isoY][isoX];
 
+            // attempt to walk to a square with an object
             if (tileEntity && tileEntity.constructor.name === 'GameObject') {
-                this.movingObject = null;
+                this.cancelMoveObject();
                 this.game.objectSettings.init({ object: tileEntity });
 
                 if (!tileEntity.sit) {
@@ -565,6 +627,7 @@ class Room {
                 }
             }
 
+            // if we walk to a square that isn't a couch, destroy the settings
             if ((tileEntity && !tileEntity.sit) || !tileEntity) {
                 this.game.objectSettings.destroy();
             }
@@ -577,18 +640,36 @@ class Room {
 
                     this.movingObject.edit = false;
 
+                    if (
+                        this.movingObject.oldX > -1 &&
+                        this.movingObject.oldY > -1
+                    ) {
+                        this.game.write({
+                            type: 'pick-up-object',
+                            name: this.movingObject.name,
+                            x: this.movingObject.oldX,
+                            y: this.movingObject.oldY
+                        });
+                    }
+
+                    this.movingObject.oldX = -1;
+                    this.movingObject.oldY = -1;
+
                     this.addObject(this.movingObject);
 
                     this.game.write({
                         type: 'add-object',
                         name: this.movingObject.name,
                         x: this.movingObject.x,
-                        y: this.movingObject.y
+                        y: this.movingObject.y,
+                        angle: this.movingObject.angle
                     });
                 } else if (this.movingObject.constructor.name === 'Rug') {
                     this.addRug(this.movingObject);
 
                     this.movingObject.edit = false;
+
+                    // TODO pick-up rug
 
                     this.game.write({
                         type: 'add-rug',
@@ -675,6 +756,7 @@ class Room {
         this.game.actionBar.destroy();
         this.game.settings.destroy();
         this.game.objectSettings.destroy();
+        this.game.rugSettings.destroy();
 
         this.game.removeListener('message', this.boundOnMessage);
         window.removeEventListener('keypress', this.boundOnTab);

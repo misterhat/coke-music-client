@@ -227,7 +227,7 @@ class Settings {
         this.saveButton.addEventListener('click', this.boundOnSave);
         this.deleteButton.addEventListener('click', this.boundOnDelete);
 
-        this.studioInput.textContent = this.room.studio;
+        this.studioInput.value = this.room.studio;
 
         this.settingsButton.style.fontStyle = 'italic';
         this.container.style.display = 'block';

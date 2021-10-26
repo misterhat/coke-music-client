@@ -630,31 +630,34 @@ h6 {
 
 .coke-music-slider {
     -webkit-appearance: none;
-    /*background: transparent;*/
     background-color: #eedbc6;
+    bottom: 2px;
+    box-sizing: border-box;
     height: 4px;
     margin: 0;
-    box-sizing: border-box;
     position: relative;
     width: 120px;
-    bottom: 2px;
 }
 
 .coke-music-slider::-moz-range-thumb, .coke-music-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
-    width: 16px;
-    height: 16px;
     background-color: #efefef;
-    cursor: pointer;
     border-radius: 8px;
     border: 1px solid #000;
+    cursor: pointer;
+    height: 16px;
     margin: 0;
+    width: 16px;
 }
 
 .coke-music-radio {
     display: inline-block;
+    height: 16px;
     margin: 0;
     position: relative;
     top: 4px;
-    height: 16px;
+}
+
+.coke-music-rug-settings {
+    bottom: 162px;
 }

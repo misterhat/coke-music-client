@@ -6,6 +6,8 @@ const rugs = require('coke-music-data/rugs.json');
 // max items per page
 const ITEMS_PER_PAGE = 25;
 
+const TRANSITION_MS = 500;
+
 class Inventory {
     constructor(game) {
         this.game = game;
@@ -62,7 +64,7 @@ class Inventory {
     }
 
     getTotalPages() {
-        return Math.ceil(this.items.length / ITEMS_PER_PAGE);
+        return Math.max(1, Math.ceil(this.items.length / ITEMS_PER_PAGE));
     }
 
     onMouseDown() {
@@ -129,6 +131,10 @@ class Inventory {
 
                 const { room } = this.game.states;
 
+                if (room.ownerID !== this.game.characterID) {
+                    return;
+                }
+
                 if (item.type === 'furniture') {
                     const object = new GameObject(this.game, room, item);
 
@@ -194,7 +200,7 @@ class Inventory {
         this.nextButton.addEventListener('click', this.boundOnNext);
         this.previousButton.addEventListener('click', this.boundOnPrevious);
 
-        this.container.style.transition = 'top 0.5s';
+        this.container.style.transition = `top ${TRANSITION_MS / 1000}s`;
         this.container.style.left = `${this.x}px`;
         this.container.style.top = `${this.y}px`;
 
@@ -203,7 +209,7 @@ class Inventory {
         this.transformTimeout = setTimeout(() => {
             this.container.style.transition = '';
             this.transformTimeout = null;
-        }, 500);
+        }, TRANSITION_MS);
 
         this.updateInventory();
 
@@ -221,7 +227,7 @@ class Inventory {
         this.transformTimeout = setTimeout(() => {
             this.container.style.transition = '';
             this.transformTimeout = null;
-        }, 500);
+        }, TRANSITION_MS);
 
         this.header.removeEventListener('mousedown', this.boundOnMouseDown);
         this.closeButton.removeEventListener('click', this.boundOnClose);

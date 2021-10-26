@@ -232,6 +232,7 @@ class Character {
         this.walkSpeed = 5;
 
         this.isSitting = false;
+        this.sitting = null;
 
         this.idleStepTimeout = null;
     }
@@ -363,18 +364,20 @@ class Character {
         return headSprite;
     }
 
-    generateBodySprite(angle, index) {
-        // base canvas
-        const { canvas: bodySprite, context: bodyContext } = createCanvas(
+    drawShirt(bodyContext, angle) {
+        if (this.shirtIndex === -1) {
+            return;
+        }
+
+        const { canvas: shirtCanvas, context: shirtContext } = createCanvas(
             BODY_WIDTH,
             BODY_HEIGHT
         );
 
-        bodyContext.drawImage(
-            this.game.images['/character/bodies.png'],
+        shirtContext.drawImage(
+            this.game.images['/character/shirts.png'],
             angle * BODY_WIDTH,
-            (this.isFemale ? BODY_COUNT * BODY_HEIGHT : 0) +
-                index * BODY_HEIGHT,
+            this.shirtIndex * BODY_HEIGHT,
             BODY_WIDTH,
             BODY_HEIGHT,
             0,
@@ -383,64 +386,12 @@ class Character {
             BODY_HEIGHT
         );
 
-        // skin tone
-        bodyContext.fillStyle = '#000';
-        bodyContext.globalCompositeOperation = 'source-atop';
-        bodyContext.globalAlpha = this.skinTone;
+        colourizeImage(shirtCanvas, this.shirtColour);
 
-        bodyContext.fillRect(0, 0, BODY_WIDTH, BODY_HEIGHT);
+        bodyContext.drawImage(shirtCanvas, 0, 0);
+    }
 
-        bodyContext.globalCompositeOperation = 'source-over';
-        bodyContext.globalAlpha = 1;
-
-        if (this.pantsIndex !== -1) {
-            const { canvas: pantsCanvas, context: pantsContext } = createCanvas(
-                BODY_WIDTH,
-                BODY_HEIGHT
-            );
-
-            pantsContext.drawImage(
-                this.game.images['/character/pants.png'],
-                angle * BODY_WIDTH,
-                this.pantsIndex * BODY_HEIGHT * 6 + index * BODY_HEIGHT,
-                BODY_WIDTH,
-                BODY_HEIGHT,
-                0,
-                0,
-                BODY_WIDTH,
-                BODY_HEIGHT
-            );
-
-            colourizeImage(pantsCanvas, this.pantsColour);
-
-            bodyContext.drawImage(pantsCanvas, 0, 0);
-        }
-
-        // shirt
-        if (this.shirtIndex !== -1) {
-            const { canvas: shirtCanvas, context: shirtContext } = createCanvas(
-                BODY_WIDTH,
-                BODY_HEIGHT
-            );
-
-            shirtContext.drawImage(
-                this.game.images['/character/shirts.png'],
-                angle * BODY_WIDTH,
-                this.shirtIndex * BODY_HEIGHT,
-                BODY_WIDTH,
-                BODY_HEIGHT,
-                0,
-                0,
-                BODY_WIDTH,
-                BODY_HEIGHT
-            );
-
-            colourizeImage(shirtCanvas, this.shirtColour);
-
-            bodyContext.drawImage(shirtCanvas, 0, 0);
-        }
-
-        // arms
+    drawArms(bodyContext, angle, index) {
         for (const {
             index: armIndex,
             x: offsetX,
@@ -491,49 +442,78 @@ class Character {
                 ARM_SIZE
             );
 
-            if (this.sleeveIndex === -1) {
-                continue;
-            }
-
             // sleeves
-            const {
-                canvas: sleeveCanvas,
-                context: sleeveContext
-            } = createCanvas(ARM_SIZE, ARM_SIZE);
+            if (this.sleeveIndex !== -1) {
+                const {
+                    canvas: sleeveCanvas,
+                    context: sleeveContext
+                } = createCanvas(ARM_SIZE, ARM_SIZE);
 
-            if (rotate) {
-                sleeveContext.translate(ARM_SIZE, 0);
-                sleeveContext.scale(-1, 1);
+                if (rotate) {
+                    sleeveContext.translate(ARM_SIZE, 0);
+                    sleeveContext.scale(-1, 1);
+                }
+
+                sleeveContext.drawImage(
+                    this.game.images['/character/sleeves.png'],
+                    this.sleeveIndex * ARM_SIZE,
+                    armIndex * ARM_SIZE,
+                    ARM_SIZE,
+                    ARM_SIZE,
+                    0,
+                    0,
+                    ARM_SIZE,
+                    ARM_SIZE
+                );
+
+                colourizeImage(sleeveCanvas, this.shirtColour);
+
+                bodyContext.drawImage(
+                    sleeveCanvas,
+                    0,
+                    0,
+                    ARM_SIZE,
+                    ARM_SIZE,
+                    offsetX,
+                    offsetY,
+                    ARM_SIZE,
+                    ARM_SIZE
+                );
             }
-
-            sleeveContext.drawImage(
-                this.game.images['/character/sleeves.png'],
-                this.sleeveIndex * ARM_SIZE,
-                armIndex * ARM_SIZE,
-                ARM_SIZE,
-                ARM_SIZE,
-                0,
-                0,
-                ARM_SIZE,
-                ARM_SIZE
-            );
-
-            colourizeImage(sleeveCanvas, this.shirtColour);
-
-            bodyContext.drawImage(
-                sleeveCanvas,
-                0,
-                0,
-                ARM_SIZE,
-                ARM_SIZE,
-                offsetX,
-                offsetY,
-                ARM_SIZE,
-                ARM_SIZE
-            );
         }
+    }
 
-        // shirt
+    generateBodySprite(angle, index) {
+        // base canvas
+        const { canvas: bodySprite, context: bodyContext } = createCanvas(
+            BODY_WIDTH,
+            BODY_HEIGHT + 10
+        );
+
+        bodyContext.drawImage(
+            this.game.images['/character/bodies.png'],
+            angle * BODY_WIDTH,
+            (this.isFemale ? BODY_COUNT * BODY_HEIGHT : 0) +
+                index * BODY_HEIGHT,
+            BODY_WIDTH,
+            BODY_HEIGHT,
+            0,
+            0,
+            BODY_WIDTH,
+            BODY_HEIGHT
+        );
+
+        // skin tone
+        bodyContext.fillStyle = '#000';
+        bodyContext.globalCompositeOperation = 'source-atop';
+        bodyContext.globalAlpha = this.skinTone;
+
+        bodyContext.fillRect(0, 0, BODY_WIDTH, BODY_HEIGHT);
+
+        bodyContext.globalCompositeOperation = 'source-over';
+        bodyContext.globalAlpha = 1;
+
+        // shoes
         if (this.shoesIndex !== -1) {
             const { canvas: shoesCanvas, context: shoesContext } = createCanvas(
                 70,
@@ -543,7 +523,7 @@ class Character {
             shoesContext.drawImage(
                 this.game.images['/character/shoes.png'],
                 angle * 70,
-                this.shoesIndex * 78 + index * 78,
+                this.shoesIndex * 78 * BODY_COUNT + index * 78,
                 70,
                 78,
                 0,
@@ -555,6 +535,38 @@ class Character {
             colourizeImage(shoesCanvas, this.shoesColour);
 
             bodyContext.drawImage(shoesCanvas, 0, 0);
+        }
+
+        // pants
+        if (this.pantsIndex !== -1) {
+            const { canvas: pantsCanvas, context: pantsContext } = createCanvas(
+                BODY_WIDTH,
+                BODY_HEIGHT
+            );
+
+            pantsContext.drawImage(
+                this.game.images['/character/pants.png'],
+                angle * BODY_WIDTH,
+                this.pantsIndex * BODY_HEIGHT * 6 + index * BODY_HEIGHT,
+                BODY_WIDTH,
+                BODY_HEIGHT,
+                0,
+                0,
+                BODY_WIDTH,
+                BODY_HEIGHT
+            );
+
+            colourizeImage(pantsCanvas, this.pantsColour);
+
+            bodyContext.drawImage(pantsCanvas, 0, 0);
+        }
+
+        if (angle === 2 && (index === 0 || index === 1)) {
+            this.drawArms(bodyContext, angle, index);
+            this.drawShirt(bodyContext, angle);
+        } else {
+            this.drawShirt(bodyContext, angle);
+            this.drawArms(bodyContext, angle, index);
         }
 
         return bodySprite;
@@ -578,7 +590,8 @@ class Character {
                 const {
                     canvas: baseSprite,
                     context: baseContext
-                } = createCanvas(82, 116);
+                } = createCanvas(82, 136);
+
                 // TODO stop cutting
 
                 const bodySprite = this.generateBodySprite(angle, bodyIndex);
@@ -599,7 +612,7 @@ class Character {
                 const {
                     canvas: baseSprite,
                     context: baseContext
-                } = createCanvas(62, 116);
+                } = createCanvas(62, 136);
 
                 baseContext.translate(baseSprite.width, 0);
                 baseContext.scale(-1, 1);
@@ -654,7 +667,9 @@ class Character {
         this.x = this.toX;
         this.y = this.toY;
 
-        this.room.drawableGrid[this.y][this.x] = this;
+        if (!this.room.drawableGrid[this.y][this.x]) {
+            this.room.drawableGrid[this.y][this.x] = this;
+        }
 
         this.drawOffsetX = 0;
         this.drawOffsetY = 0;
@@ -665,9 +680,13 @@ class Character {
 
     move(x, y) {
         if (this.isSitting) {
+            this.sitting.sitters.delete(this);
+            this.sitting = null;
+
             this.isSitting = false;
             this.toX = x;
             this.toY = y;
+
             this.resetDrawOffset();
             return;
         }
@@ -803,10 +822,6 @@ class Character {
     }
 
     draw() {
-        /*if (this.isSitting) {
-            return;
-        }*/
-
         const { context } = this.game;
 
         if (!this.isSitting) {

@@ -10,7 +10,20 @@ class Navigation {
             'coke-music-navigation-close'
         );
 
+        this.roomTableWrap = document.getElementById(
+            'coke-music-studio-table-wrap'
+        );
+
         this.roomTable = document.getElementById('coke-music-studio-table');
+
+        this.showActiveButton = document.getElementById(
+            'coke-music-active-studios'
+        );
+
+        this.showMineButton = document.getElementById('coke-music-my-studios');
+
+        this.noStudios = document.getElementById('coke-music-no-studios');
+
         this.createButton = document.getElementById('coke-music-create-studio');
         this.logoutButton = document.getElementById('coke-music-logout');
 
@@ -23,6 +36,8 @@ class Navigation {
 
         this.boundOnMessage = this.onMessage.bind(this);
         this.boundOnClose = this.onClose.bind(this);
+        this.boundOnShowActive = this.onShowActive.bind(this);
+        this.boundOnShowMine = this.onShowMine.bind(this);
         this.boundOnCreate = this.onCreate.bind(this);
         this.boundOnLogout = this.onLogout.bind(this);
     }
@@ -42,6 +57,20 @@ class Navigation {
         this.destroy();
     }
 
+    onShowActive() {
+        this.showActive = !this.showActive;
+        this.showMine = false;
+
+        this.game.write({ type: 'get-rooms', active: this.showActive });
+    }
+
+    onShowMine() {
+        this.showMine = !this.showMine;
+        this.showActive = false;
+
+        this.game.write({ type: 'get-rooms', mine: this.showMine });
+    }
+
     onCreate() {
         this.game.write({ type: 'create-room' });
     }
@@ -57,6 +86,14 @@ class Navigation {
     }
 
     updateRoomTable() {
+        if (!this.rooms.length) {
+            this.noStudios.style.display = 'block';
+            this.roomTableWrap.style.display = 'none';
+        } else {
+            this.noStudios.style.display = 'none';
+            this.roomTableWrap.style.display = 'block';
+        }
+
         for (const room of this.rooms) {
             console.log(room);
 
@@ -97,6 +134,8 @@ class Navigation {
 
         this.game.on('message', this.boundOnMessage);
         this.closeButton.addEventListener('click', this.boundOnClose);
+        this.showActiveButton.addEventListener('click', this.boundOnShowActive);
+        this.showMineButton.addEventListener('click', this.boundOnShowMine);
         this.createButton.addEventListener('click', this.boundOnCreate);
         this.logoutButton.addEventListener('click', this.boundOnLogout);
 
@@ -115,6 +154,13 @@ class Navigation {
 
         this.game.removeListener('message', this.boundOnMessage);
         this.closeButton.removeEventListener('click', this.boundOnClose);
+
+        this.showActiveButton.removeEventListener(
+            'click',
+            this.boundOnShowActive
+        );
+
+        this.showMineButton.removeEventListener('click', this.boundOnShowMine);
         this.createButton.removeEventListener('click', this.boundOnCreate);
         this.logoutButton.removeEventListener('click', this.boundOnLogout);
 
