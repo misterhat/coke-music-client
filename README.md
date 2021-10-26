@@ -1,6 +1,6 @@
 # coke-music-client
 
-client for [Coke Music/MyCoke]https://en.wikipedia.org/wiki/MyCoke) recreation.
+client for [Coke Music/MyCoke](https://en.wikipedia.org/wiki/MyCoke) recreation.
 
 ## install
 
