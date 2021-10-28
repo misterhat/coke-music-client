@@ -49,7 +49,12 @@ class ObjectSettings {
     }
 
     onDelete() {
-        this.room.removeObject(this.object);
+        if (this.type === 'object') {
+            this.room.removeObject(this.object);
+        } else if (this.type === 'rug') {
+            this.room.removeRug(this.object);
+        }
+
         this.destroy();
 
         this.game.write({
@@ -61,7 +66,12 @@ class ObjectSettings {
     }
 
     onPickUp() {
-        this.room.removeObject(this.object);
+        if (this.type === 'object') {
+            this.room.removeObject(this.object);
+        } else if (this.type === 'rug') {
+            this.room.removeRug(this.object);
+        }
+
         this.destroy();
 
         this.game.write({
@@ -101,7 +111,13 @@ class ObjectSettings {
     onMove() {
         this.object.oldX = this.object.x;
         this.object.oldY = this.object.y;
-        this.room.removeObject(this.object);
+
+        if (this.type === 'object') {
+            this.room.removeObject(this.object);
+        } else if (this.type === 'rug') {
+            this.room.removeRug(this.object);
+        }
+
         this.room.moveObject(this.object);
     }
 

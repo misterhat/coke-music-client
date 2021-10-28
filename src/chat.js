@@ -89,6 +89,8 @@ class Chat {
         x += TILE_WIDTH / 2;
 
         messageLi.style.left = `${x}px`;
+
+        // TODO max/min this out so it doesn't get cut-off
     }
 
     clearChatMessages() {

@@ -104,10 +104,15 @@ class Room {
             if (this.movingObject.oldX > -1 && this.movingObject.oldY > -1) {
                 this.movingObject.x = this.movingObject.oldX;
                 this.movingObject.y = this.movingObject.oldY;
+
                 this.movingObject.oldX = -1;
                 this.movingObject.oldY = -1;
-                this.addObject(this.movingObject);
-                this.movingObject.alreadyPlaced = false;
+
+                if (this.movingObject.constructor.name === 'GameObject') {
+                    this.addObject(this.movingObject);
+                } else if (this.movingObject.constructor.name === 'Rug') {
+                    this.addRug(this.movingObject);
+                }
             }
         }
 
@@ -116,6 +121,10 @@ class Room {
 
     addRug(rug) {
         this.rugs.add(rug);
+    }
+
+    removeRug(rug) {
+        this.rugs.delete(rug);
     }
 
     onMessage(message) {
@@ -216,6 +225,26 @@ class Room {
                         object.name === message.name
                     ) {
                         this.removeObject(object);
+                        return;
+                    }
+                }
+                break;
+            }
+
+            case 'add-rug': {
+                const rug = new Rug(this.game, this, message);
+                this.addRug(rug);
+                break;
+            }
+
+            case 'remove-rug': {
+                for (const rug of this.rugs) {
+                    if (
+                        rug.x === message.x &&
+                        rug.y === message.y &&
+                        rug.name === message.name
+                    ) {
+                        this.removeRug(rug);
                         return;
                     }
                 }
@@ -619,10 +648,16 @@ class Room {
 
             // attempt to walk to a square with an object
             if (tileEntity && tileEntity.constructor.name === 'GameObject') {
-                this.cancelMoveObject();
+                if (
+                    this.movingObject &&
+                    this.movingObject.constructor.name === 'GameObject'
+                ) {
+                    this.cancelMoveObject();
+                }
+
                 this.game.objectSettings.init({ object: tileEntity });
 
-                if (!tileEntity.sit) {
+                if (!this.movingObject && !tileEntity.sit) {
                     return;
                 }
             }
@@ -669,7 +704,17 @@ class Room {
 
                     this.movingObject.edit = false;
 
-                    // TODO pick-up rug
+                    if (
+                        this.movingObject.oldX > -1 &&
+                        this.movingObject.oldY > -1
+                    ) {
+                        this.game.write({
+                            type: 'pick-up-rug',
+                            name: this.movingObject.name,
+                            x: this.movingObject.oldX,
+                            y: this.movingObject.oldY
+                        });
+                    }
 
                     this.game.write({
                         type: 'add-rug',
