@@ -57,6 +57,7 @@ PRELOAD_IMAGES.push(...furnitureImages.map((name) => `/furniture/${name}.png`));
 // TODO filter by sit
 PRELOAD_IMAGES.push('/furniture/coke_couch_foreground.png');
 PRELOAD_IMAGES.push('/furniture/grunge_couch_foreground.png');
+PRELOAD_IMAGES.push('/furniture/cow_bean_bag_foreground.png');
 
 function getMousePosition(canvas, e) {
     const boundingRect = canvas.getBoundingClientRect();
