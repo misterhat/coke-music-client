@@ -118,8 +118,6 @@ class Appearance {
 
         this.character[`${type}Index`] = value;
 
-        console.log(value);
-
         if (
             (type === 'shirt' &&
                 !this.character.isFemale &&

@@ -59,6 +59,9 @@ PRELOAD_IMAGES.push('/furniture/coke_couch_foreground.png');
 PRELOAD_IMAGES.push('/furniture/grunge_couch_foreground.png');
 PRELOAD_IMAGES.push('/furniture/cow_bean_bag_foreground.png');
 
+PRELOAD_IMAGES.push('/furniture/disco_poster.png');
+PRELOAD_IMAGES.push('/furniture/golden_poster.png');
+
 function getMousePosition(canvas, e) {
     const boundingRect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / boundingRect.width;

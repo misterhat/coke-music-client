@@ -1,8 +1,9 @@
 const Character = require('./character');
+const GameObject = require('./game-object');
+const Poster = require('./poster');
+const Rug = require('./rug');
 const rooms = require('coke-music-data/rooms.json');
 const { createCanvas, cutPolygon, shadeImage } = require('./draw');
-const GameObject = require('./game-object');
-const Rug = require('./rug');
 
 const TILE_WIDTH = 70;
 const TILE_HEIGHT = 36;
@@ -14,9 +15,10 @@ class Room {
         this.tileWidth = TILE_WIDTH;
         this.tileHeight = TILE_HEIGHT;
 
+        this.characters = new Map();
         this.objects = new Set();
         this.rugs = new Set();
-        this.characters = new Map();
+        this.posters = new Set();
         this.entities = [];
 
         // cartesian coordinates of where to draw tileSelectImage
@@ -409,6 +411,12 @@ class Room {
         }
     }
 
+    drawPosters() {
+        for (const poster of this.posters.values()) {
+            poster.draw();
+        }
+    }
+
     drawWalls() {
         if (!this.wall) {
             return;
@@ -417,7 +425,7 @@ class Room {
         for (const [wallIndex, wallSection] of Object.entries(this.walls)) {
             const isLeft = wallSection.orientation === 'left';
             const image = isLeft ? this.wallLeftImage : this.wallRightImage;
-            const deltaY = 18 * (isLeft ? -1 : 1);
+            const deltaY = (TILE_HEIGHT / 2) * (isLeft ? -1 : 1);
 
             let drawX = wallSection.offsetX;
             let drawY = wallSection.offsetY;
@@ -604,6 +612,12 @@ class Room {
             this.addRug(rug);
         }
 
+        const poster = new Poster(this.game, this, { name: 'golden_poster', x: 0, y: 0 });
+
+        window.poster = poster;
+
+        this.posters.add(poster);
+
         this.drawRoom();
 
         this.roomInfoName.textContent = studio;
@@ -634,6 +648,10 @@ class Room {
 
         for (const rug of this.rugs.values()) {
             rug.update();
+        }
+
+        for (const poster of this.posters.values()) {
+            poster.update();
         }
 
         if (this.game.isPanelOpen()) {
@@ -780,6 +798,7 @@ class Room {
             return;
         }
 
+        this.drawPosters();
         this.drawRugs();
 
         if (this.isTileSelected()) {
@@ -818,6 +837,7 @@ class Room {
         this.characters.clear();
         this.objects.clear();
         this.rugs.clear();
+        this.posters.clear();
 
         this.entities.length = 0;
 
