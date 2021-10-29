@@ -206,7 +206,7 @@ h6 {
 }
 
 .coke-music-face-button {
-    left: 106px;
+    left: 104px;
 }
 
 .coke-music-hair-button {
@@ -538,7 +538,8 @@ h6 {
 .coke-music-room-info {
     display: none;
     bottom: 60px;
-    color: #80736a;
+    /*color: #80736a;*/
+    color: #eee;
     font-size: 10px;
     font-weight: bold;
     left: 36px;

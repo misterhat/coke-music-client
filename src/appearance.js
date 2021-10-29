@@ -1,11 +1,11 @@
-const Character = require('./character');
+const shirts = require('coke-music-data/shirts.json');
 const { cssColor, rgb2hex } = require('@swiftcarrot/color-fns');
 
 const BUTTONS = ['hair', 'shirt', 'pants', 'shoes'];
 
 const TOTAL_INDEXES = {
     hair: 10, // last is bald? sure
-    shirt: 21,
+    shirt: shirts.length - 1,
     pants: 10,
     shoes: 5
 };
@@ -66,13 +66,17 @@ class Appearance {
             'coke-music-skin-colour'
         );
 
+        this.maleRadio = document.getElementById('coke-music-male');
+        this.femaleRadio = document.getElementById('coke-music-female');
+
         this.saveButton = document.getElementById('coke-music-appearance-save');
 
         this.closeButton = document.getElementById(
             'coke-music-appearance-close'
         );
 
-        this.boundSkinColour = this.onSkinColour.bind(this);
+        this.boundOnSkinColour = this.onSkinColour.bind(this);
+        this.boundOnGender = this.onGender.bind(this);
         this.boundOnSave = this.onSave.bind(this);
         this.boundOnClose = this.onClose.bind(this);
     }
@@ -84,19 +88,39 @@ class Appearance {
     }
 
     onPrevioustButton(type) {
-        const value = this.character[`${type}Index`];
+        let value = this.character[`${type}Index`];
+        value = value - 1 < 0 ? TOTAL_INDEXES[type] : value - 1;
 
-        this.character[`${type}Index`] =
-            value - 1 < 0 ? TOTAL_INDEXES[type] : value - 1;
+        this.character[`${type}Index`] = value;
 
         this.updateCharacter();
+
+        if (
+            (type === 'shirt' &&
+                !this.character.isFemale &&
+                shirts[value].female) ||
+            (this.character.isFemale && !shirts[value].female)
+        ) {
+            this.onPrevioustButton(type);
+            return;
+        }
     }
 
     onNextButton(type) {
-        const value = this.character[`${type}Index`];
+        let value = this.character[`${type}Index`];
+        value = value + 1 > TOTAL_INDEXES[type] ? 0 : value + 1;
 
-        this.character[`${type}Index`] =
-            value + 1 > TOTAL_INDEXES[type] ? 0 : value + 1;
+        this.character[`${type}Index`] = value;
+
+        if (
+            (type === 'shirt' &&
+                !this.character.isFemale &&
+                shirts[value].female) ||
+            (this.character.isFemale && !shirts[value].female)
+        ) {
+            this.onNextButton(type);
+            return;
+        }
 
         this.updateCharacter();
     }
@@ -104,6 +128,12 @@ class Appearance {
     onSkinColour() {
         const value = Number(this.skinColourRange.value);
         this.character.skinTone = (value / 10) * 0.75;
+        this.updateCharacter();
+    }
+
+    onGender() {
+        this.character.isFemale = !this.maleRadio.checked;
+        this.character.shirtIndex = this.character.isFemale ? 6 : 0;
         this.updateCharacter();
     }
 
@@ -118,7 +148,9 @@ class Appearance {
             pantsIndex: this.character.pantsIndex,
             pantsColour: formatColour(this.character.pantsColour),
             shoesIndex: this.character.shoesIndex,
-            shoesColour: formatColour(this.character.shoesColour)
+            shoesColour: formatColour(this.character.shoesColour),
+            skinTone: Number(this.skinColourRange.value),
+            isFemale: Number(this.character.isFemale)
         });
 
         this.destroy();
@@ -145,6 +177,9 @@ class Appearance {
         this.skinColourRange.value = Math.floor(
             (this.character.skinTone / 0.75) * Number(this.skinColourRange.max)
         );
+
+        this.maleRadio.checked = !this.character.isFemale;
+        this.femaleRadio.checked = this.character.isFemale;
     }
 
     init() {
@@ -167,7 +202,9 @@ class Appearance {
             );
         }
 
-        this.skinColourRange.addEventListener('click', this.boundSkinColour);
+        this.skinColourRange.addEventListener('click', this.boundOnSkinColour);
+        this.maleRadio.addEventListener('change', this.boundOnGender);
+        this.femaleRadio.addEventListener('change', this.boundOnGender);
         this.saveButton.addEventListener('click', this.boundOnSave);
         this.closeButton.addEventListener('click', this.boundOnClose);
 
@@ -199,7 +236,14 @@ class Appearance {
             );
         }
 
-        this.skinColourRange.removeEventListener('click', this.boundSkinColour);
+        this.skinColourRange.removeEventListener(
+            'click',
+            this.boundOnSkinColour
+        );
+
+        this.maleRadio.removeEventListener('change', this.boundOnGender);
+        this.femaleRadio.removeEventListener('change', this.boundOnGender);
+
         this.saveButton.addEventListener('click', this.boundOnSave);
         this.closeButton.addEventListener('click', this.boundOnClose);
     }

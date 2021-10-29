@@ -1,3 +1,4 @@
+const shirts = require('coke-music-data/shirts.json');
 const { createCanvas, colourizeImage, intToRGB } = require('./draw');
 
 // size of base head sprite in spritesheet
@@ -27,6 +28,9 @@ const EYE_COUNT = 5;
 
 // amount of sub-bodies
 const BODY_COUNT = 6;
+
+// amount of sub-heads
+const HEAD_COUNT = 3;
 
 // offsets for applying the head sprite to the final character sprite
 const BODY_ANGLE_OFFSETS = [
@@ -212,7 +216,7 @@ class Character {
         this.drawX = 0;
         this.drawY = 0;
 
-        this.isFemale = false;
+        this.isFemale = !!data.isFemale;
 
         this.angle = data.angle || 0;
         this.walkIndex = -1;
@@ -374,10 +378,12 @@ class Character {
             BODY_HEIGHT
         );
 
+        const { shirtIndex } = shirts[this.shirtIndex];
+
         shirtContext.drawImage(
             this.game.images['/character/shirts.png'],
             angle * BODY_WIDTH,
-            this.shirtIndex * BODY_HEIGHT,
+            shirtIndex * BODY_HEIGHT,
             BODY_WIDTH,
             BODY_HEIGHT,
             0,
@@ -442,21 +448,26 @@ class Character {
                 ARM_SIZE
             );
 
-            // sleeves
-            if (this.sleeveIndex !== -1) {
-                const {
-                    canvas: sleeveCanvas,
-                    context: sleeveContext
-                } = createCanvas(ARM_SIZE, ARM_SIZE);
+            if (this.shirtIndex === -1) {
+                return;
+            }
 
-                if (rotate) {
-                    sleeveContext.translate(ARM_SIZE, 0);
-                    sleeveContext.scale(-1, 1);
-                }
+            const { sleeveIndex } = shirts[this.shirtIndex];
 
+            const {
+                canvas: sleeveCanvas,
+                context: sleeveContext
+            } = createCanvas(ARM_SIZE, ARM_SIZE);
+
+            if (rotate) {
+                sleeveContext.translate(ARM_SIZE, 0);
+                sleeveContext.scale(-1, 1);
+            }
+
+            if (sleeveIndex !== -1) {
                 sleeveContext.drawImage(
                     this.game.images['/character/sleeves.png'],
-                    this.sleeveIndex * ARM_SIZE,
+                    sleeveIndex * ARM_SIZE,
                     armIndex * ARM_SIZE,
                     ARM_SIZE,
                     ARM_SIZE,
@@ -467,19 +478,19 @@ class Character {
                 );
 
                 colourizeImage(sleeveCanvas, this.shirtColour);
-
-                bodyContext.drawImage(
-                    sleeveCanvas,
-                    0,
-                    0,
-                    ARM_SIZE,
-                    ARM_SIZE,
-                    offsetX,
-                    offsetY,
-                    ARM_SIZE,
-                    ARM_SIZE
-                );
             }
+
+            bodyContext.drawImage(
+                sleeveCanvas,
+                0,
+                0,
+                ARM_SIZE,
+                ARM_SIZE,
+                offsetX,
+                offsetY,
+                ARM_SIZE,
+                ARM_SIZE
+            );
         }
     }
 
@@ -642,7 +653,6 @@ class Character {
         this.hatIndex = -1;
         //this.bodyIndex = 0;
         this.shirtIndex = data.shirtIndex;
-        this.sleeveIndex = 0;
         this.pantsIndex = data.pantsIndex;
         this.shoesIndex = data.shoesIndex;
         this.skinTone = (data.skinTone / 10) * 0.75;
@@ -679,7 +689,7 @@ class Character {
     }
 
     move(x, y) {
-        if (this.isSitting) {
+        if (this.sitting) {
             this.sitting.sitters.delete(this);
             this.sitting = null;
 

@@ -214,6 +214,9 @@ class Settings {
             this.game.actionBar.state.destroy();
         }
 
+        this.game.objectSettings.destroy();
+        this.game.rugSettings.destroy();
+
         this.oldDrawable = [...this.room.drawableGrid];
         this.oldRoomName = this.room.name;
         this.oldRoomTile = this.room.tile;

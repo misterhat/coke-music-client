@@ -1,6 +1,10 @@
 # coke-music-client
 
-client for [Coke Music/MyCoke](https://en.wikipedia.org/wiki/MyCoke) recreation.
+client for [Coke Music/MyCoke](https://en.wikipedia.org/wiki/MyCoke) recreation,
+for use with
+[coke-music-server](https://github.com/misterhat/coke-music-server).
+
+uses assets from https://github.com/frostover/cokemusic.
 
 ## install
 

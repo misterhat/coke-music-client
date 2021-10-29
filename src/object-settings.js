@@ -139,7 +139,13 @@ class ObjectSettings {
         this.nameHeader.textContent = object.title;
 
         this.pedestalImg.src = `/assets/furniture/icons/${this.object.name}.png`;
-        this.pedestalImg.style.bottom = `${this.pedestalImg.height - 20}px`;
+
+        this.pedestalImg.onload = () => {
+            this.pedestalImg.style.bottom = `${Math.max(
+                0,
+                this.pedestalImg.height - 20
+            )}px`;
+        };
 
         this.deleteButton.addEventListener('click', this.boundOnDelete);
         this.pickUpButton.addEventListener('click', this.boundOnPickUp);

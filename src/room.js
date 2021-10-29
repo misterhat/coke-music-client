@@ -17,6 +17,7 @@ class Room {
         this.objects = new Set();
         this.rugs = new Set();
         this.characters = new Map();
+        this.entities = [];
 
         // cartesian coordinates of where to draw tileSelectImage
         this.tileSelectX = -1;
@@ -46,6 +47,7 @@ class Room {
     addCharacter(character) {
         this.drawableGrid[character.y][character.x] = character;
         this.characters.set(character.id, character);
+        this.entities.push(character);
     }
 
     removeCharacter(character) {
@@ -58,6 +60,7 @@ class Room {
         this.drawableGrid[character.y][character.x] = null;
 
         this.characters.delete(character.id);
+        this.entities.splice(this.entities.indexOf(character), 1);
     }
 
     addObject(object) {
@@ -76,6 +79,7 @@ class Room {
         }
 
         this.objects.add(object);
+        this.entities.push(object);
     }
 
     removeObject(object) {
@@ -90,6 +94,60 @@ class Room {
         }
 
         this.objects.delete(object);
+        this.entities.splice(this.entities.indexOf(object), 1);
+
+        // TODO remove sitters and reset position
+    }
+
+    addRug(rug) {
+        this.rugs.add(rug);
+    }
+
+    removeRug(rug) {
+        this.rugs.delete(rug);
+    }
+
+    sortEntities() {
+        this.entities.sort((a, b) => {
+            //const depthA = a.x + a.y;
+            //const depthB = b.x + b.y;
+
+            const depthA =
+                a.x +
+                (a.getTileWidth ? a.getTileWidth() - 1 : 0) +
+                (a.y + (a.getTileHeight ? a.getTileHeight() - 1 : 0));
+
+            const depthB =
+                b.x +
+                (b.getTileWidth ? b.getTileWidth() - 1 : 0) +
+                (b.y + (b.getTileHeight ? b.getTileHeight() - 1 : 0));
+
+            if (depthA > depthB) {
+                return 1;
+            }
+
+            if (depthA < depthB) {
+                return -1;
+            }
+
+            if (a.y > b.y) {
+                return 1;
+            }
+
+            if (a.y < b.y) {
+                return -1;
+            }
+
+            if (a.x > b.x) {
+                return 1;
+            }
+
+            if (a.x < b.x) {
+                return -1;
+            }
+
+            return 0;
+        });
     }
 
     moveObject(object) {
@@ -117,14 +175,6 @@ class Room {
         }
 
         this.movingObject = null;
-    }
-
-    addRug(rug) {
-        this.rugs.add(rug);
-    }
-
-    removeRug(rug) {
-        this.rugs.delete(rug);
     }
 
     onMessage(message) {
@@ -434,7 +484,6 @@ class Room {
         this.roomContext.drawImage(this.backgroundImage, 0, 0);
 
         this.drawTiles();
-        //this.drawRugs();
         this.drawWalls();
         this.clipForeground();
     }
@@ -498,7 +547,6 @@ class Room {
         this.game.navigation.destroy();
         this.game.chat.init();
         this.game.actionBar.init();
-        //this.game.settings.init();
 
         this.game.mouseDown = false;
 
@@ -668,61 +716,48 @@ class Room {
             }
 
             if (this.movingObject) {
-                if (this.movingObject.constructor.name === 'GameObject') {
-                    if (this.movingObject.isBlocked()) {
-                        return;
-                    }
+                const type =
+                    this.movingObject.constructor.name === 'GameObject'
+                        ? 'object'
+                        : 'rug';
 
-                    this.movingObject.edit = false;
+                if (type === 'object' && this.movingObject.isBlocked()) {
+                    return;
+                }
 
-                    if (
-                        this.movingObject.oldX > -1 &&
-                        this.movingObject.oldY > -1
-                    ) {
-                        this.game.write({
-                            type: 'pick-up-object',
-                            name: this.movingObject.name,
-                            x: this.movingObject.oldX,
-                            y: this.movingObject.oldY
-                        });
-                    }
+                this.movingObject.edit = false;
 
-                    this.movingObject.oldX = -1;
-                    this.movingObject.oldY = -1;
-
-                    this.addObject(this.movingObject);
-
+                if (
+                    this.movingObject.oldX > -1 &&
+                    this.movingObject.oldY > -1
+                ) {
                     this.game.write({
-                        type: 'add-object',
+                        type: `pick-up-${type}`,
                         name: this.movingObject.name,
-                        x: this.movingObject.x,
-                        y: this.movingObject.y,
-                        angle: this.movingObject.angle
-                    });
-                } else if (this.movingObject.constructor.name === 'Rug') {
-                    this.addRug(this.movingObject);
-
-                    this.movingObject.edit = false;
-
-                    if (
-                        this.movingObject.oldX > -1 &&
-                        this.movingObject.oldY > -1
-                    ) {
-                        this.game.write({
-                            type: 'pick-up-rug',
-                            name: this.movingObject.name,
-                            x: this.movingObject.oldX,
-                            y: this.movingObject.oldY
-                        });
-                    }
-
-                    this.game.write({
-                        type: 'add-rug',
-                        name: this.movingObject.name,
-                        x: this.movingObject.x,
-                        y: this.movingObject.y
+                        x: this.movingObject.oldX,
+                        y: this.movingObject.oldY
                     });
                 }
+
+                this.movingObject.oldX = -1;
+                this.movingObject.oldY = -1;
+
+                const message = {
+                    type: `add-${type}`,
+                    name: this.movingObject.name,
+                    x: this.movingObject.x,
+                    y: this.movingObject.y
+                };
+
+                if (type === 'object') {
+                    message.angle = this.movingObject.angle;
+
+                    this.addObject(this.movingObject);
+                } else if (type === 'rug') {
+                    this.addRug(this.movingObject);
+                }
+
+                this.game.write(message);
 
                 this.movingObject = null;
             } else {
@@ -739,6 +774,11 @@ class Room {
             this.backgroundOffsetX,
             this.backgroundOffsetY
         );
+
+        // don't draw entities while settings is open
+        if (this.game.settings.open) {
+            return;
+        }
 
         this.drawRugs();
 
@@ -757,35 +797,15 @@ class Room {
             }
         }
 
-        // don't draw entities while settings is open
-        if (this.game.settings.open) {
-            return;
-        }
+        this.sortEntities();
 
-        const entitiesDrawn = new Set();
-
-        for (let y = 0; y < this.height; y += 1) {
-            for (let x = 0; x < this.width; x += 1) {
-                const entity = this.drawableGrid[y][x];
-
-                if (!entity || entitiesDrawn.has(entity)) {
-                    continue;
-                }
-
-                entitiesDrawn.add(entity);
+        for (const entity of this.entities) {
+            if (!entity.sitting) {
                 entity.draw();
+            }
 
-                if (entity.x === this.exit.x && entity.y === this.exit.y) {
-                    this.drawForeground();
-                }
-
-                if (
-                    x < this.width &&
-                    this.drawableGrid[y][x + 1] &&
-                    entitiesDrawn.has(this.drawableGrid[y][x + 1])
-                ) {
-                    this.drawableGrid[y][x + 1].draw();
-                }
+            if (entity.x === this.exit.x && entity.y === this.exit.y) {
+                this.drawForeground();
             }
         }
 
@@ -795,6 +815,12 @@ class Room {
     }
 
     destroy() {
+        this.characters.clear();
+        this.objects.clear();
+        this.rugs.clear();
+
+        this.entities.length = 0;
+
         this.game.navigation.destroy();
         this.game.chat.destroy();
         this.game.inventory.destroy();
