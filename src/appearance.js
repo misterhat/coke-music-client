@@ -1,9 +1,11 @@
+const faces = require('coke-music-data/faces.json');
 const shirts = require('coke-music-data/shirts.json');
 const { cssColor, rgb2hex } = require('@swiftcarrot/color-fns');
 
-const BUTTONS = ['hair', 'shirt', 'pants', 'shoes'];
+const BUTTONS = ['face', 'hair', 'shirt', 'pants', 'shoes'];
 
 const TOTAL_INDEXES = {
+    face: faces.length - 1,
     hair: 10, // last is bald? sure
     shirt: shirts.length - 1,
     pants: 10,
@@ -35,17 +37,19 @@ class Appearance {
         this.nextEvents = {};
 
         for (const type of BUTTONS) {
-            const colourButton = document.getElementById(
-                `coke-music-${type}-colour`
-            );
+            if (type !== 'face') {
+                const colourButton = document.getElementById(
+                    `coke-music-${type}-colour`
+                );
 
-            this.colourButtons[type] = colourButton;
+                this.colourButtons[type] = colourButton;
 
-            this.colourEvents[type] = this.onChangeColour.bind(
-                this,
-                colourButton,
-                `${type}Colour`
-            );
+                this.colourEvents[type] = this.onChangeColour.bind(
+                    this,
+                    colourButton,
+                    `${type}Colour`
+                );
+            }
 
             const previousButton = document.getElementById(
                 `coke-music-${type}-previous`
@@ -99,7 +103,9 @@ class Appearance {
             (type === 'shirt' &&
                 !this.character.isFemale &&
                 shirts[value].female) ||
-            (this.character.isFemale && !shirts[value].female)
+            (type === 'shirt' &&
+                this.character.isFemale &&
+                !shirts[value].female)
         ) {
             this.onPrevioustButton(type);
             return;
@@ -112,11 +118,15 @@ class Appearance {
 
         this.character[`${type}Index`] = value;
 
+        console.log(value);
+
         if (
             (type === 'shirt' &&
                 !this.character.isFemale &&
                 shirts[value].female) ||
-            (this.character.isFemale && !shirts[value].female)
+            (type === 'shirt' &&
+                this.character.isFemale &&
+                !shirts[value].female)
         ) {
             this.onNextButton(type);
             return;
@@ -168,6 +178,10 @@ class Appearance {
     // update the HTML to match the character attributes
     sync() {
         for (const type of BUTTONS) {
+            if (type === 'face') {
+                continue;
+            }
+
             const colourButton = this.colourButtons[type];
             const colour = this.character[`${type}Colour`];
 
@@ -186,10 +200,12 @@ class Appearance {
         this.open = true;
 
         for (const type of BUTTONS) {
-            this.colourButtons[type].addEventListener(
-                'change',
-                this.colourEvents[type]
-            );
+            if (type !== 'face') {
+                this.colourButtons[type].addEventListener(
+                    'change',
+                    this.colourEvents[type]
+                );
+            }
 
             this.previousArrows[type].addEventListener(
                 'click',
@@ -220,10 +236,12 @@ class Appearance {
         this.container.style.display = 'none';
 
         for (const type of BUTTONS) {
-            this.colourButtons[type].addEventListener(
-                'change',
-                this.colourEvents[type]
-            );
+            if (type !== 'face') {
+                this.colourButtons[type].addEventListener(
+                    'change',
+                    this.colourEvents[type]
+                );
+            }
 
             this.previousArrows[type].addEventListener(
                 'click',

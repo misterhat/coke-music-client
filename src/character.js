@@ -1,4 +1,5 @@
 const shirts = require('coke-music-data/shirts.json');
+const faces = require('coke-music-data/faces.json');
 const { createCanvas, colourizeImage, intToRGB } = require('./draw');
 
 // size of base head sprite in spritesheet
@@ -248,11 +249,13 @@ class Character {
             HAIR_HEIGHT
         );
 
+        const { headIndex, faceIndex, eyeIndex } = faces[this.faceIndex];
+
         // head
         headContext.drawImage(
             this.game.images['/character/heads.png'],
             angle * HEAD_WIDTH,
-            this.headIndex * HEAD_HEIGHT,
+            headIndex * HEAD_HEIGHT,
             HEAD_WIDTH,
             HEAD_HEIGHT,
             HEAD_OFFSET_X,
@@ -266,8 +269,7 @@ class Character {
             headContext.drawImage(
                 this.game.images['/character/faces.png'],
                 (angle - 1) * HEAD_WIDTH,
-                this.faceIndex * (HEAD_HEIGHT * FACE_COUNT) +
-                    this.faceSubIndex * HEAD_HEIGHT,
+                faceIndex * HEAD_HEIGHT * FACE_COUNT,
                 HEAD_WIDTH,
                 HEAD_HEIGHT,
                 HEAD_OFFSET_X,
@@ -302,8 +304,7 @@ class Character {
             eyeContext.drawImage(
                 this.game.images['/character/eyes.png'],
                 (angle - 1) * HEAD_WIDTH,
-                this.eyeIndex * (HEAD_HEIGHT * EYE_COUNT) +
-                    this.eyeSubIndex * HEAD_HEIGHT,
+                eyeIndex * HEAD_HEIGHT * EYE_COUNT,
                 HEAD_WIDTH,
                 HEAD_HEIGHT,
                 0,
@@ -643,13 +644,12 @@ class Character {
 
     updateAppearance(data) {
         this.headIndex = 0;
-        this.eyeIndex = 5;
         this.eyeSubIndex = 0;
-        this.faceIndex = 2;
+        this.faceIndex = data.faceIndex;
         this.faceSubIndex = 0;
         this.hairIndex = data.hairIndex;
         this.eyeIndex = 1;
-        this.eyeSubIndex = 0;
+        //this.eyeSubIndex = 0;
         this.hatIndex = -1;
         //this.bodyIndex = 0;
         this.shirtIndex = data.shirtIndex;
