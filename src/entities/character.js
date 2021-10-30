@@ -1,6 +1,6 @@
-const shirts = require('coke-music-data/shirts.json');
 const faces = require('coke-music-data/faces.json');
-const { createCanvas, colourizeImage, intToRGB } = require('./draw');
+const shirts = require('coke-music-data/shirts.json');
+const { createCanvas, colourizeImage, intToRGB } = require('../draw');
 
 // size of base head sprite in spritesheet
 const HEAD_WIDTH = 30;

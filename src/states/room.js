@@ -1,9 +1,9 @@
-const Character = require('./character');
-const GameObject = require('./game-object');
-const Poster = require('./poster');
-const Rug = require('./rug');
+const Character = require('../entities/character');
+const GameObject = require('../entities/game-object');
+const Poster = require('../entities/poster');
+const Rug = require('../entities/rug');
 const rooms = require('coke-music-data/rooms.json');
-const { createCanvas, cutPolygon, shadeImage } = require('./draw');
+const { createCanvas, cutPolygon, shadeImage } = require('../draw');
 
 const TILE_WIDTH = 70;
 const TILE_HEIGHT = 36;
@@ -39,6 +39,7 @@ class Room {
         this.drawableGrid = [];
 
         this.movingObject = null;
+        this.movingPoster = null;
 
         this.boundOnMessage = this.onMessage.bind(this);
         this.boundOnTab = this.onTab.bind(this);
@@ -47,6 +48,7 @@ class Room {
     }
 
     addCharacter(character) {
+        // TODO check furniture and make sitting
         this.drawableGrid[character.y][character.x] = character;
         this.characters.set(character.id, character);
         this.entities.push(character);
@@ -152,6 +154,7 @@ class Room {
         });
     }
 
+    // move rugs and furniture
     moveObject(object) {
         object.edit = true;
         this.movingObject = object;
@@ -177,6 +180,11 @@ class Room {
         }
 
         this.movingObject = null;
+    }
+
+    movePoster(poster) {
+        poster.edit = true;
+        this.movingPoster = poster;
     }
 
     onMessage(message) {
@@ -219,7 +227,7 @@ class Room {
                     this.drawableGrid[character.y][character.x] = null;
                 }
 
-                if (character.isSitting) {
+                if (character.sitting) {
                     character.sitting.sitters.delete(character);
                 }
 
@@ -422,7 +430,7 @@ class Room {
             return;
         }
 
-        for (const [wallIndex, wallSection] of Object.entries(this.walls)) {
+        for (const [wallIndex, wallSection] of this.walls.entries()) {
             const isLeft = wallSection.orientation === 'left';
             const image = isLeft ? this.wallLeftImage : this.wallRightImage;
             const deltaY = (TILE_HEIGHT / 2) * (isLeft ? -1 : 1);
@@ -440,7 +448,7 @@ class Room {
                 );
 
                 const isExit =
-                    +wallIndex === this.exit.wall[0] && i === this.exit.wall[1];
+                    wallIndex === this.exit.wall[0] && i === this.exit.wall[1];
 
                 if (isExit) {
                     cutPolygon(context, this.exit.clip);
@@ -448,8 +456,8 @@ class Room {
 
                 this.roomContext.drawImage(canvas, drawX, drawY);
 
-                drawY += deltaY;
                 drawX += TILE_HEIGHT;
+                drawY += deltaY;
             }
         }
     }
@@ -603,17 +611,19 @@ class Room {
             this.addObject(object);
         }
 
-        for (const { name, x, y } of rugs) {
-            const rug = new Rug(this.game, this, { name });
-
-            rug.x = x;
-            rug.y = y;
-
+        for (const data of rugs) {
+            const rug = new Rug(this.game, this, data);
             this.addRug(rug);
         }
 
-        const poster = new Poster(this.game, this, { name: 'golden_poster', x: 0, y: 0 });
+        const poster = new Poster(this.game, this, {
+            name: 'golden_poster',
+            x: 0,
+            y: 0
+        });
+        poster.edit = true;
 
+        this.movingPoster = poster;
         window.poster = poster;
 
         this.posters.add(poster);
@@ -659,6 +669,43 @@ class Room {
         }
 
         const { mouseX, mouseY } = this.game;
+
+        if (this.movingPoster) {
+            for (const [
+                wallIndex,
+                { offsetX, width }
+            ] of this.walls.entries()) {
+                const endX = offsetX + TILE_HEIGHT * width;
+
+                if (mouseX >= offsetX && mouseX <= endX) {
+                    this.movingPoster.x = wallIndex;
+
+                    this.movingPoster.y = Math.max(
+                        0,
+                        mouseX - offsetX - this.movingPoster.image.width
+                    );
+
+                    break;
+                }
+            }
+
+            if (this.game.mouseDown) {
+                this.game.mouseDown = false;
+
+                this.movingPoster.edit = false;
+                this.posters.add(this.movingPoster);
+
+                this.game.write({
+                    type: 'add-poster',
+                    name: this.movingPoster.name,
+                    x: this.movingPoster.x,
+                    y: this.movingPoster.y
+                });
+
+                this.movingPoster = null;
+            }
+        }
+
         const { isoX, isoY } = this.coordinateToIso(mouseX, mouseY);
 
         // make sure the coordinate isn't off the grid or blocked

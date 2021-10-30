@@ -1,6 +1,8 @@
-const GameObject = require('./game-object');
-const Rug = require('./rug');
+const GameObject = require('../entities/game-object');
+const Poster = require('../entities/poster');
+const Rug = require('../entities/rug');
 const furniture = require('coke-music-data/furniture.json');
+const posters = require('coke-music-data/posters.json');
 const rugs = require('coke-music-data/rugs.json');
 
 // max items per page
@@ -137,12 +139,13 @@ class Inventory {
 
                 if (item.type === 'furniture') {
                     const object = new GameObject(this.game, room, item);
-
                     room.moveObject(object);
                 } else if (item.type === 'rugs') {
                     const rug = new Rug(this.game, room, item);
-
                     room.moveObject(rug);
+                } else if (item.type === 'posters') {
+                    const poster = new Poster(this.game, room, item);
+                    room.movePoster(poster);
                 }
             };
 
@@ -219,7 +222,7 @@ class Inventory {
     destroy() {
         this.open = false;
 
-        this.container.style.transition = 'top 0.5s';
+        this.container.style.transition = `top ${TRANSITION_MS / 1000}s`;
         this.container.style.top = '800px';
 
         clearTimeout(this.transformTimeout);

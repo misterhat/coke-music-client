@@ -120,6 +120,15 @@ function colourizeImage(canvas, colour) {
     context.putImageData(imageData, 0, 0);
 }
 
+// flip image horizontally
+function flipImage(image) {
+    const { canvas, context } = createCanvas(image.width, image.height);
+    context.translate(image.width, 0);
+    context.scale(-1, 1);
+    context.drawImage(image, 0, 0);
+    return canvas;
+}
+
 // convert server-sized integers to { r, g, b } colours
 function intToRGB(integer) {
     const hex = `#${integer.toString(16).padStart(6, '0')}`;
@@ -131,5 +140,6 @@ module.exports = {
     cutPolygon,
     shadeImage,
     colourizeImage,
+    flipImage,
     intToRGB
 };

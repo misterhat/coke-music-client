@@ -1,7 +1,7 @@
 const rugs = require('coke-music-data/rugs.json');
 
 class Rug {
-    constructor(game, room, { name }) {
+    constructor(game, room, { name, x, y }) {
         this.game = game;
         this.room = room;
 
@@ -9,14 +9,18 @@ class Rug {
 
         Object.assign(this, rugs[name]);
 
-        this.x = -1;
-        this.y = -1;
+        this.x = x;
+        this.y = y;
 
         this.width = Math.floor(this.tileWidth * 70);
         this.height = Math.floor(this.tileHeight * 36);
 
         this.drawX = 0;
         this.drawY = 0;
+    }
+
+    isBlocked() {
+        // TODO
     }
 
     update() {

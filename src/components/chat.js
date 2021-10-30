@@ -1,4 +1,4 @@
-const { createCanvas, colourizeImage, intToRGB } = require('./draw');
+const { createCanvas, colourizeImage, intToRGB } = require('../draw');
 
 // TODO move this
 const TILE_WIDTH = 70;

@@ -1,5 +1,5 @@
 const AccountPanel = require('./account-panel');
-const Character = require('./character');
+const Character = require('../entities/character');
 
 class Login extends AccountPanel {
     constructor(game) {

@@ -1,5 +1,4 @@
 const furniture = require('coke-music-data/furniture.json');
-const { createCanvas } = require('./draw');
 
 // ne, sw, nw, se
 
@@ -26,8 +25,10 @@ class GameObject {
         this.x = x;
         this.y = y;
 
+        // Characters sitting on the object
         this.sitters = new Set();
 
+        // the x and y of the object when we start moving, in case we cancel
         this.oldX = -1;
         this.oldY = -1;
 
@@ -77,12 +78,7 @@ class GameObject {
 
                 const tileEntity = this.room.drawableGrid[y][x];
 
-                if (
-                    tileEntity &&
-                    tileEntity !==
-                        this /*&&
-                    tileEntity.constructor.name === 'GameObject'*/
-                ) {
+                if (tileEntity && tileEntity !== this) {
                     return true;
                 }
             }
