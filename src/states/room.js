@@ -48,8 +48,16 @@ class Room {
     }
 
     addCharacter(character) {
-        // TODO check furniture and make sitting
-        this.drawableGrid[character.y][character.x] = character;
+        const tileEntity = this.drawableGrid[character.y][character.x];
+
+        if (tileEntity && tileEntity.sit) {
+            character.isSitting = true;
+            character.sitting = tileEntity;
+            tileEntity.sitters.add(character);
+        } else {
+            this.drawableGrid[character.y][character.x] = character;
+        }
+
         this.characters.set(character.id, character);
         this.entities.push(character);
     }
@@ -59,7 +67,7 @@ class Room {
             return;
         }
 
-        character.resetDrawOffset();
+        //character.resetDrawOffset();
 
         this.drawableGrid[character.y][character.x] = null;
 
@@ -100,6 +108,14 @@ class Room {
         this.objects.delete(object);
         this.entities.splice(this.entities.indexOf(object), 1);
 
+        for (const character of object.sitters) {
+            character.isSitting = false;
+            character.sitting = null;
+            this.drawableGrid[character.y][character.x] = character;
+        }
+
+        object.sitters.clear();
+
         // TODO remove sitters and reset position
     }
 
@@ -109,6 +125,14 @@ class Room {
 
     removeRug(rug) {
         this.rugs.delete(rug);
+    }
+
+    addPoster(poster) {
+        this.posters.add(poster);
+    }
+
+    removePoster(poster) {
+        this.posters.delete(poster);
     }
 
     sortEntities() {
@@ -179,7 +203,22 @@ class Room {
             }
         }
 
+        if (this.movingPoster) {
+            this.movingPoster.edit = false;
+
+            if (this.movingPoster.oldX > -1 && this.movingPoster.oldY > -1) {
+                this.movingPoster.x = this.movingPoster.oldX;
+                this.movingPoster.y = this.movingPoster.oldY;
+
+                this.movingPoster.oldX = -1;
+                this.movingPoster.oldY = -1;
+
+                this.addPoster(this.movingPoster);
+            }
+        }
+
         this.movingObject = null;
+        this.movingPoster = null;
     }
 
     movePoster(poster) {
@@ -231,13 +270,13 @@ class Room {
                     character.sitting.sitters.delete(character);
                 }
 
-                character.isSitting = true;
                 character.x = message.x;
                 character.y = message.y;
 
                 const tileEntity = this.drawableGrid[message.y][message.x];
 
                 if (tileEntity) {
+                    character.isSitting = true;
                     character.sitting = tileEntity;
                     tileEntity.sitters.add(character);
                 }
@@ -305,6 +344,26 @@ class Room {
                         rug.name === message.name
                     ) {
                         this.removeRug(rug);
+                        return;
+                    }
+                }
+                break;
+            }
+
+            case 'add-poster': {
+                const poster = new Poster(this.game, this, message);
+                this.addPoster(poster);
+                break;
+            }
+
+            case 'remove-poster': {
+                for (const poster of this.posters) {
+                    if (
+                        poster.x === message.x &&
+                        poster.y === message.y &&
+                        poster.name === message.name
+                    ) {
+                        this.removePoster(poster);
                         return;
                     }
                 }
@@ -549,13 +608,11 @@ class Room {
 
     updateWallType() {
         if (this.wall) {
-            this.wallLeftImage = this.game.images[
-                `/walls/${this.wall}_left.png`
-            ];
+            this.wallLeftImage =
+                this.game.images[`/walls/${this.wall}_left.png`];
 
-            this.wallRightImage = this.game.images[
-                `/walls/${this.wall}_right.png`
-            ];
+            this.wallRightImage =
+                this.game.images[`/walls/${this.wall}_right.png`];
         }
     }
 
@@ -578,7 +635,8 @@ class Room {
             wall,
             tile,
             objects,
-            rugs
+            rugs,
+            posters
         } = properties;
 
         this.id = id;
@@ -601,14 +659,15 @@ class Room {
         this.game.on('message', this.boundOnMessage);
         window.addEventListener('keypress', this.boundOnTab);
 
-        for (const data of characters) {
-            const character = new Character(this.game, this, data);
-            this.addCharacter(character);
-        }
-
         for (const data of objects) {
             const object = new GameObject(this.game, this, data);
             this.addObject(object);
+        }
+
+        // add characters after objects for sitting
+        for (const data of characters) {
+            const character = new Character(this.game, this, data);
+            this.addCharacter(character);
         }
 
         for (const data of rugs) {
@@ -616,17 +675,10 @@ class Room {
             this.addRug(rug);
         }
 
-        const poster = new Poster(this.game, this, {
-            name: 'golden_poster',
-            x: 0,
-            y: 0
-        });
-        poster.edit = true;
-
-        this.movingPoster = poster;
-        window.poster = poster;
-
-        this.posters.add(poster);
+        for (const data of posters) {
+            const poster = new Poster(this.game, this, data);
+            this.addPoster(poster);
+        }
 
         this.drawRoom();
 
@@ -675,34 +727,55 @@ class Room {
                 wallIndex,
                 { offsetX, width }
             ] of this.walls.entries()) {
-                const endX = offsetX + TILE_HEIGHT * width;
+                const startX = offsetX + this.backgroundOffsetX;
 
-                if (mouseX >= offsetX && mouseX <= endX) {
+                const endX =
+                    this.backgroundOffsetX + offsetX + TILE_HEIGHT * width;
+
+                if (mouseX >= startX && mouseX <= endX) {
                     this.movingPoster.x = wallIndex;
 
-                    this.movingPoster.y = Math.max(
-                        0,
-                        mouseX - offsetX - this.movingPoster.image.width
+                    this.movingPoster.y = Math.min(
+                        Math.max(
+                            0,
+                            mouseX - startX - this.movingPoster.image.width / 2
+                        ),
+                        endX - startX - this.movingPoster.image.width
                     );
 
-                    break;
+                    if (this.game.mouseDown) {
+                        this.game.mouseDown = false;
+
+                        this.movingPoster.edit = false;
+
+                        if (
+                            this.movingPoster.oldX > -1 &&
+                            this.movingPoster.oldY > -1
+                        ) {
+                            this.game.write({
+                                type: 'pick-up-poster',
+                                name: this.movingPoster.name,
+                                x: this.movingPoster.oldX,
+                                y: this.movingPoster.oldY
+                            });
+                        }
+
+                        this.addPoster(this.movingPoster);
+
+                        this.game.write({
+                            type: 'add-poster',
+                            name: this.movingPoster.name,
+                            x: this.movingPoster.x,
+                            y: this.movingPoster.y
+                        });
+
+                        this.movingPoster = null;
+                    } else {
+                        this.movingPoster.update();
+                    }
+
+                    return;
                 }
-            }
-
-            if (this.game.mouseDown) {
-                this.game.mouseDown = false;
-
-                this.movingPoster.edit = false;
-                this.posters.add(this.movingPoster);
-
-                this.game.write({
-                    type: 'add-poster',
-                    name: this.movingPoster.name,
-                    x: this.movingPoster.x,
-                    y: this.movingPoster.y
-                });
-
-                this.movingPoster = null;
             }
         }
 
@@ -718,6 +791,24 @@ class Room {
         ) {
             this.tileSelectX = -1;
             this.tileSelectY = -1;
+
+            if (this.game.mouseDown) {
+                this.game.mouseDown = false;
+
+                for (const poster of this.posters) {
+                    if (
+                        mouseX >= poster.drawX &&
+                        mouseX <= poster.drawX + poster.image.width &&
+                        mouseY >= poster.drawY &&
+                        mouseY <= poster.drawY + poster.image.height
+                    ) {
+                        this.game.objectSettings.destroy();
+                        this.game.posterSettings.init({ object: poster });
+                        break;
+                    }
+                }
+            }
+
             return;
         }
 
@@ -736,6 +827,8 @@ class Room {
         this.tileSelectY = tileY;
 
         if (this.game.mouseDown) {
+            this.game.posterSettings.destroy();
+
             this.game.mouseDown = false;
 
             let selectedRug = false;
@@ -846,6 +939,11 @@ class Room {
         }
 
         this.drawPosters();
+
+        if (this.movingPoster) {
+            this.movingPoster.draw();
+        }
+
         this.drawRugs();
 
         if (this.isTileSelected()) {

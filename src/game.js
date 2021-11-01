@@ -10,6 +10,7 @@ const Register = require('./states/register');
 const Room = require('./states/room');
 const Settings = require('./components/settings');
 const furniture = require('coke-music-data/furniture.json');
+const posters = require('coke-music-data/posters.json');
 const rooms = require('coke-music-data/rooms.json');
 const rugs = require('coke-music-data/rugs.json');
 const tiles = require('coke-music-data/tiles.json');
@@ -49,18 +50,20 @@ for (const { file } of walls) {
     PRELOAD_IMAGES.push(`/walls/${file}_right.png`);
 }
 
-const furnitureImages = Object.keys(furniture);
-furnitureImages.push(...Object.keys(rugs));
+for (const [name, { sit }] of Object.entries(furniture)) {
+    PRELOAD_IMAGES.push(`/furniture/${name}.png`);
 
-PRELOAD_IMAGES.push(...furnitureImages.map((name) => `/furniture/${name}.png`));
+    if (sit) {
+        PRELOAD_IMAGES.push(`/furniture/${name}_foreground.png`);
+    }
+}
 
-// TODO filter by sit
-PRELOAD_IMAGES.push('/furniture/coke_couch_foreground.png');
-PRELOAD_IMAGES.push('/furniture/grunge_couch_foreground.png');
-PRELOAD_IMAGES.push('/furniture/cow_bean_bag_foreground.png');
+const objectImages = [];
 
-PRELOAD_IMAGES.push('/furniture/disco_poster.png');
-PRELOAD_IMAGES.push('/furniture/golden_poster.png');
+objectImages.push(...Object.keys(rugs));
+objectImages.push(...Object.keys(posters));
+
+PRELOAD_IMAGES.push(...objectImages.map((name) => `/furniture/${name}.png`));
 
 function getMousePosition(canvas, e) {
     const boundingRect = canvas.getBoundingClientRect();
@@ -108,7 +111,7 @@ class Game extends EventEmitter {
             room: new Room(this)
         };
 
-        // substates
+        // components
         this.navigation = new Navigation(this);
         this.chat = new Chat(this);
         this.inventory = new Inventory(this);
@@ -116,6 +119,7 @@ class Game extends EventEmitter {
         this.settings = new Settings(this);
         this.objectSettings = new ObjectSettings(this, 'object');
         this.rugSettings = new ObjectSettings(this, 'rug');
+        this.posterSettings = new ObjectSettings(this, 'poster');
         this.appearance = new Appearance(this);
 
         this.socket = null;

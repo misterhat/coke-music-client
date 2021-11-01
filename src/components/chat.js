@@ -18,28 +18,30 @@ class Chat {
     }
 
     onChat(event) {
-        if (event.key === 'Enter') {
-            let message = this.input.value.trim();
+        if (event.key !== 'Enter') {
+            return;
+        }
 
-            this.input.value = '';
+        let message = this.input.value.trim();
 
-            if (!message.length) {
-                return;
-            }
+        this.input.value = '';
 
-            if (/^::/i.test(message)) {
-                message = message.replace('::', '');
+        if (!message.length) {
+            return;
+        }
 
-                const split = message.split(' ');
+        if (/^::/i.test(message)) {
+            message = message.replace('::', '');
 
-                this.game.write({
-                    type: 'command',
-                    command: split[0],
-                    args: split.slice(1)
-                });
-            } else {
-                this.game.write({ type: 'chat', message });
-            }
+            const split = message.split(' ');
+
+            this.game.write({
+                type: 'command',
+                command: split[0],
+                args: split.slice(1)
+            });
+        } else {
+            this.game.write({ type: 'chat', message });
         }
     }
 
@@ -54,8 +56,6 @@ class Chat {
         );
 
         nameContext.drawImage(this.nameImage, 0, 0);
-
-        console.log(colour);
 
         colourizeImage(nameCanvas, intToRGB(colour));
 

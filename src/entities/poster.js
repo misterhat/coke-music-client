@@ -20,6 +20,9 @@ class Poster {
         this.drawX = 0;
         this.drawY = 0;
 
+        this.oldX = -1;
+        this.oldY = -1;
+
         this.leftImage = this.game.images[`/furniture/${this.name}.png`];
         this.rightImage = flipImage(this.leftImage);
 
@@ -33,7 +36,7 @@ class Poster {
     update() {
         const { offsetX, offsetY, orientation } = this.room.walls[this.x];
 
-        this.drawX = offsetX + this.room.backgroundOffsetX + this.y;
+        this.drawX = this.room.backgroundOffsetX + offsetX + this.y;
 
         this.drawY =
             offsetY +

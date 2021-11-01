@@ -712,6 +712,8 @@ class Character {
         const deltaX = this.x - x;
         const deltaY = this.y - y;
 
+        // TODO can check deltas here
+
         this.angle = WALK_ANGLE_DELTAS[deltaX][deltaY];
 
         this.toX = x;

@@ -53,6 +53,8 @@ class ObjectSettings {
             this.room.removeObject(this.object);
         } else if (this.type === 'rug') {
             this.room.removeRug(this.object);
+        } else if (this.type === 'poster') {
+            this.room.removePoster(this.object);
         }
 
         this.destroy();
@@ -70,6 +72,8 @@ class ObjectSettings {
             this.room.removeObject(this.object);
         } else if (this.type === 'rug') {
             this.room.removeRug(this.object);
+        } else if (this.type === 'poster') {
+            this.room.removePoster(this.object);
         }
 
         this.destroy();
@@ -114,11 +118,14 @@ class ObjectSettings {
 
         if (this.type === 'object') {
             this.room.removeObject(this.object);
+            this.room.moveObject(this.object);
         } else if (this.type === 'rug') {
             this.room.removeRug(this.object);
+            this.room.moveObject(this.object);
+        } else if (this.type === 'poster') {
+            this.room.removePoster(this.object);
+            this.room.movePoster(this.object);
         }
-
-        this.room.moveObject(this.object);
     }
 
     onEscape(event) {
