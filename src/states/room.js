@@ -115,8 +115,6 @@ class Room {
         }
 
         object.sitters.clear();
-
-        // TODO remove sitters and reset position
     }
 
     addRug(rug) {
@@ -993,6 +991,7 @@ class Room {
         this.game.settings.destroy();
         this.game.objectSettings.destroy();
         this.game.rugSettings.destroy();
+        this.game.posterSettings.destroy();
 
         this.game.removeListener('message', this.boundOnMessage);
         window.removeEventListener('keypress', this.boundOnTab);
